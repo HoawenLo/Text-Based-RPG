@@ -39,11 +39,6 @@ class Engine:
         self.character.current_location = "caravan"
         self.character.location_data = self.character.current_map.all_locations[self.character.current_location]
 
-        self.character.pickup_item(item.all_items["basic map"])
-        self.character.pickup_item(item.all_items["simple health potion"])
-        self.character.pickup_item(item.all_items["apple"])
-        self.character.pickup_item(item.all_items["stone axe"])
-
         welcome_text = "You arrive in Mottengard welcomed by an old man."
         helper_functions.text_crawl(welcome_text)
 
@@ -79,6 +74,7 @@ class Engine:
                                 else:
                                     print(f"Combat started with {npc_response}")
                                     self.character.enter_combat(available_npcs[npc_response])
+                                    available_npcs[npc_response].health = available_npcs[npc_response].base_health
                                     break
                             if self.character.dead:
                                 print("Game over!")
@@ -134,13 +130,17 @@ class Engine:
                             if fetched_npc.npc_type == "normal":
                                 fetched_npc.run_dialogue(True)
                             if fetched_npc.npc_type == "quest":
-                                fetched_npc.run_dialogue(True)
+                                quest_ref = self.character.quest_database[fetched_npc.quest_reference]
+                                fetched_npc.run_dialogue(True, quest_ref)
+                                self.character.active_dialogue_npc = fetched_npc
                                 fetched_npc.character_reference = self.character
-                                fetched_npc.activate_quest()
+                                if quest_ref.quest_active == False and quest_ref.complete == False:
+                                    fetched_npc.activate_quest()
                             if fetched_npc.npc_type == "trader":
                                 fetched_npc.character_reference = self.character
                                 fetched_npc.run_trading_dialogue(True)
                             self.character.check_all_quests()
+                            self.character.active_dialogue_npc = None
                         else:
                             print("NPC does not exist.")
 
@@ -231,7 +231,7 @@ class Engine:
         while True:
 
             if first_loading:
-                self.load_title_screen()
+                # self.load_title_screen()
                 first_loading = False
 
             option = input(f"Select option: -- play -- lore -- exit --\n")

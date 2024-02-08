@@ -42,6 +42,8 @@ class PlayerCharacter:
         self.in_combat = False
         self.dead = False
 
+        self.active_dialogue_npc = None
+
 
 
     # Movement

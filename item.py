@@ -214,6 +214,17 @@ apple = Item(item_name="apple",
              active_effect=restore_health, 
              health_restoration=5)
 
+cake = Item(item_name="cake", 
+             item_type="consumable", 
+             item_description="A tasty cake, restores 10 health.", 
+             item_stack=True, 
+             item_attack=0, 
+             item_defence=0, 
+             value=15, 
+             passive_effect=None, 
+             active_effect=restore_health, 
+             health_restoration=10)
+
 all_items = {"simple copper sword": simple_copper_sword, 
              "simple copper helmet": simple_copper_helmet, 
              "simple copper chestplate":simple_copper_chestplate, 
@@ -225,6 +236,7 @@ all_items = {"simple copper sword": simple_copper_sword,
              "stone axe":stone_axe, 
              "basic map":basic_map, 
              "beer":beer, 
-             "apple":apple}
+             "apple":apple, 
+             "cake":cake}
 
 

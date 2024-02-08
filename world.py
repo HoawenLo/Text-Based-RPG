@@ -39,7 +39,8 @@ class Mottengard(Map):
                     "interactions":{"use item":None, "access chest":self.chest_storage_inn, "exit":None}, 
                     "npcs":{"villager":mottengard_npcs["villager inn"], 
                             "local drunk":mottengard_npcs["local drunk"], 
-                            "inn owner":mottengard_npcs["inn trader"]}}
+                            "inn owner":mottengard_npcs["inn trader"], 
+                            "inn chef":mottengard_npcs["inn chef"]}}
         
         self.forest_path = {"locations":["village square"], 
                             "interactions":{"use item":None, "leave mottengard":self.exit, "exit":None}, 

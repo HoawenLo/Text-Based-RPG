@@ -26,6 +26,8 @@ class TutorialQuest(Quest):
         self.rewards = "10 exp, 2 x Apple"
         self.character = None
 
+        self.quest_active = False
+
         self.activate_quest = False
         self.complete = False
 
@@ -68,6 +70,7 @@ class TutorialQuest(Quest):
             self.character.pickup_item(item.all_items["apple"])
             self.character.pickup_item(item.all_items["apple"])
 
+            self.quest_active = False
             self.step_three_flag = False
             self.complete = True
 
@@ -77,6 +80,7 @@ class TutorialQuest(Quest):
             # Initial run
             if self.step_one_flag == False and self.activate_quest == True:
                 print(f"{self.quest_name} started.")
+                self.quest_active = True
                 self.step_one_flag = True
                 self.activate_quest = False
             
@@ -96,6 +100,8 @@ class MottengardInnCookingQuest(Quest):
         self.requirements = "Talk to the inn chef."
         self.rewards = "10 exp, 35 gold, 1 x cake"
         self.character = None
+
+        self.quest_active = False
 
         self.activate_quest = False
         self.complete = False
@@ -122,11 +128,12 @@ class MottengardInnCookingQuest(Quest):
         
         if item.all_items["milk"] in list(self.character.inventory.keys()):
             self.step_one_milk_flag = True
-            
-        if item.all_items["egg"] in list(self.character.inventory.keys()) and self.character.inventory["egg"] == 2:
+
+        if item.all_items["egg"] in list(self.character.inventory.keys()) and self.character.inventory[item.all_items["egg"]] == 2:
             self.step_one_egg_flag = True
             
         if self.step_one_flour_flag == True and self.step_one_milk_flag == True and self.step_one_egg_flag == True:
+            print("Step one complete!")
             self.step_one_flag = False
             self.step_two_flag = True
 
@@ -134,16 +141,14 @@ class MottengardInnCookingQuest(Quest):
 
         self.current_goal = "Give the ingredients to the chef."
 
-        if self.step_two_flag:
-            pass
-
-        if npc.mottengard_npcs["rookie trainer"] in self.character.defeated_npcs.keys():
-            print("Quest complete! Gained 10 exp and 2 apples.")
+        if self.character.active_dialogue_npc == npc.mottengard_npcs["inn chef"]:
+            print("Quest complete! Gained 10 exp, 35 gold and cake.")
             
             self.character.gain_exp(10)
-            self.character.pickup_item(item.all_items["apple"])
-            self.character.pickup_item(item.all_items["apple"])
+            self.character.gold += 35
+            self.character.pickup_item(item.all_items["cake"])
 
+            self.quest_active = False
             self.step_two_flag = False
             self.complete = True
 
@@ -153,6 +158,7 @@ class MottengardInnCookingQuest(Quest):
             # Initial run
             if self.step_one_flag == False and self.activate_quest == True:
                 print(f"{self.quest_name} started.")
+                self.quest_active = True
                 self.step_one_flag = True
                 self.activate_quest = False
             
@@ -163,5 +169,5 @@ class MottengardInnCookingQuest(Quest):
                 self.step_two()
 
 
-quest_database = {"Tutorial Quest":TutorialQuest()}
+quest_database = {"Tutorial Quest":TutorialQuest(), "Cake Quest":MottengardInnCookingQuest()}
 

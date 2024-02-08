@@ -5,24 +5,28 @@ import quest
 
 class Npc:
 
-    def __init__(self, health, attack, defence, npc_type, dialogue):
+    def __init__(self, health, base_health, attack, defence, npc_type, dialogue):
         self.health = health
+        self.base_health = base_health
         self.attack = attack
         self.defence = defence
         self.npc_type = npc_type
 
         self.dialogue_text = dialogue
 
-    def run_dialogue(self, dialogue_active):
-        if callable(self.dialogue_text):
-            self.dialogue_text(dialogue_active)
+    def run_dialogue(self, dialogue_active, quest_reference=None):
+        if quest_reference == None:
+            if callable(self.dialogue_text):
+                self.dialogue_text(dialogue_active)
+            else:
+                return "Dialogue error."
         else:
-            return "Dialogue error."
+            self.dialogue_text(dialogue_active, quest_reference=quest_reference)
 
 class Quest(Npc):
 
-    def __init__(self, health, attack, defence, npc_type, dialogue, quest_reference):
-        super().__init__(health, attack, defence, npc_type, dialogue)
+    def __init__(self, health, base_health, attack, defence, npc_type, dialogue, quest_reference):
+        super().__init__(health, base_health, attack, defence, npc_type, dialogue)
 
         self.quest_reference = quest_reference
         self.character_reference = None
@@ -33,8 +37,8 @@ class Quest(Npc):
 
 class Trader(Npc):
 
-    def __init__(self, health, attack, defence, npc_type, dialogue, items):
-        super().__init__(health, attack, defence, npc_type, dialogue)
+    def __init__(self, health, base_health, attack, defence, npc_type, dialogue, items):
+        super().__init__(health, base_health, attack, defence, npc_type, dialogue)
 
         self.items = items
         self.character_reference = None
@@ -57,8 +61,8 @@ class Trader(Npc):
 
 class Aggresive(Npc):
 
-    def __init__(self, health, attack, defence, npc_type, dialogue, skill_level, common_exp_ranges):
-        super().__init__(health, attack, defence, npc_type, dialogue)
+    def __init__(self, health, base_health, attack, defence, npc_type, dialogue, skill_level, common_exp_ranges):
+        super().__init__(health, base_health, attack, defence, npc_type, dialogue)
 
         self.skill_level = skill_level
         self.exp_ranges = common_exp_ranges
@@ -426,6 +430,29 @@ def mottengard_guard_dialogue(dialogue_active):
 
         text_crawl(a_dialogue[0])
 
+def inn_chef_dialogue(dialogue_active, quest_reference):
+    if dialogue_active:
+
+        if quest_reference.activate_quest == False and quest_reference.step_one_flag == False and quest_reference.step_two_flag == False and quest_reference.complete == False:
+            a_dialogue = ["Inn chef: Hello, how may I help you?"]
+
+            a_response_original = ["Adventurer: I am looking for work."]
+
+            a_a_dialogue = ["Inn chef: Great I am preparing a banquet for guests later. I am running low on some ingredients. Bring me 2 eggs, 1 milk and 1 flour."]
+
+            text_crawl(a_dialogue[0])
+            text_crawl(a_response_original[0])
+            text_crawl(a_a_dialogue[0])
+
+        elif quest_reference.step_one_flag == True or quest_reference.step_two_flag == True:
+            a_dialogue_quest_started = ["Inn chef: I need 2 eggs, 1 milk and 1 flour."]
+
+            text_crawl(a_dialogue_quest_started[0])
+
+        if quest_reference.complete == True:
+            a_dialogue_quest_completed = ["Inn chef: Thanks again for your help, would not have been able to complete that cake in time without your help."]
+
+            text_crawl(a_dialogue_quest_completed[0])
 common_exp_ranges = {1:(1,3), 
                      2:(3,6), 
                      3:(5,8), 
@@ -453,16 +480,17 @@ common_exp_ranges = {1:(1,3),
 boss_exp_ranges = "custom values"
 
 
-mottengard_old_man = Npc(health=1, attack=0, defence=0, npc_type="normal", dialogue=mottengard_vs_old_man_dialogue)
-mottengard_guard = Npc(health=1, attack=0, defence=0, npc_type="normal", dialogue=mottengard_guard_dialogue)
-villager_vs = Npc(health=1, attack=0, defence=0, npc_type="normal", dialogue=villager_vs_dialogue)
-villager_inn = Npc(health=1, attack=0, defence=0, npc_type="normal", dialogue=villager_inn_dialogue)
-local_drunk = Npc(health=1, attack=0, defence=0, npc_type="normal", dialogue=local_drunk_dialogue)
-inn_trader = Trader(health=1, attack=0, defence=0, npc_type="trader", dialogue=inn_trader_dialogue, items=inn_items)
-general_store_trader = Trader(health=1, attack=0, defence=0, npc_type="trader", dialogue=general_store_dialogue, items=general_store_items)
-mottengard_blacksmith = Trader(health=1, attack=0, defence=0, npc_type="trader", dialogue=mottengard_blacksmith_dialogue, items=mottengard_blacksmith_items)
-rookie_trainer = Aggresive(health=8, attack=2, defence=0, npc_type="aggressive", dialogue=rookie_trainer_dialogue, skill_level=1, common_exp_ranges=common_exp_ranges)
-mottengard_tutorial_old_man = Quest(health=1, attack=0, defence=0, npc_type="quest", dialogue=mottengard_old_man_dialogue, quest_reference="Tutorial Quest")
+mottengard_old_man = Npc(health=1, base_health=1, attack=0, defence=0, npc_type="normal", dialogue=mottengard_vs_old_man_dialogue)
+mottengard_guard = Npc(health=1, base_health=1, attack=0, defence=0, npc_type="normal", dialogue=mottengard_guard_dialogue)
+villager_vs = Npc(health=1, base_health=1, attack=0, defence=0, npc_type="normal", dialogue=villager_vs_dialogue)
+villager_inn = Npc(health=1, base_health=1, attack=0, defence=0, npc_type="normal", dialogue=villager_inn_dialogue)
+local_drunk = Npc(health=1, base_health=1, attack=0, defence=0, npc_type="normal", dialogue=local_drunk_dialogue)
+inn_trader = Trader(health=1, base_health=1, attack=0, defence=0, npc_type="trader", dialogue=inn_trader_dialogue, items=inn_items)
+general_store_trader = Trader(health=1, base_health=1, attack=0, defence=0, npc_type="trader", dialogue=general_store_dialogue, items=general_store_items)
+mottengard_blacksmith = Trader(health=1, base_health=1, attack=0, defence=0, npc_type="trader", dialogue=mottengard_blacksmith_dialogue, items=mottengard_blacksmith_items)
+rookie_trainer = Aggresive(health=8, base_health=8, attack=2, defence=0, npc_type="aggressive", dialogue=rookie_trainer_dialogue, skill_level=1, common_exp_ranges=common_exp_ranges)
+inn_chef = Quest(health=1, base_health=1, attack=0, defence=0, npc_type="quest", dialogue=inn_chef_dialogue, quest_reference="Cake Quest")
+mottengard_tutorial_old_man = Quest(health=1, base_health=1, attack=0, defence=0, npc_type="quest", dialogue=mottengard_old_man_dialogue, quest_reference="Tutorial Quest")
 
 mottengard_npcs = {"old man":mottengard_old_man, 
                    "blacksmith":mottengard_blacksmith, 
@@ -473,7 +501,8 @@ mottengard_npcs = {"old man":mottengard_old_man,
                    "local drunk":local_drunk, 
                    "guard":mottengard_guard, 
                    "tutorial man":mottengard_tutorial_old_man, 
-                   "inn trader":inn_trader}
+                   "inn trader":inn_trader, 
+                   "inn chef":inn_chef}
 
 
 if __name__ == "__main__":
