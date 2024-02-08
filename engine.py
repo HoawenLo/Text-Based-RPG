@@ -24,12 +24,12 @@ class Engine:
     
     def load_new_game(self):
         
-        # helper_functions.title_crawl(self.title_screen, text_speed=0.3)
-        # helper_functions.title_crawl(self.title_screen, text_speed=0.01)
+        helper_functions.title_crawl(self.title_screen, text_speed=0.3)
+        helper_functions.title_crawl(self.title_screen, text_speed=0.01)
         
-        # print(f"{self.title_screen}")
+        print(f"{self.title_screen}")
 
-        # helper_functions.text_crawl(self.title_intro, text_speed=0.1, line_length=60)
+        helper_functions.text_crawl(self.title_intro, text_speed=0.1, line_length=60)
 
         self.character = PlayerCharacter(base_health=15, base_attack=1, base_defence=0, level=1, current_map=world.Mottengard(), quest_database=quest_database)
 
@@ -44,11 +44,11 @@ class Engine:
         self.character.pickup_item(item.all_items["apple"])
         self.character.pickup_item(item.all_items["stone axe"])
 
-        # welcome_text = "You arrive in Mottengard welcomed by an old man."
-        # helper_functions.text_crawl(welcome_text)
+        welcome_text = "You arrive in Mottengard welcomed by an old man."
+        helper_functions.text_crawl(welcome_text)
 
         tutorial_old_man = mottengard_npcs["tutorial man"]
-        # tutorial_old_man.run_dialogue(True)
+        tutorial_old_man.run_dialogue(True)
         tutorial_old_man.character_reference = self.character
         tutorial_old_man.activate_quest()
 
@@ -231,7 +231,7 @@ class Engine:
         while True:
 
             if first_loading:
-                # self.load_title_screen()
+                self.load_title_screen()
                 first_loading = False
 
             option = input(f"Select option: -- play -- lore -- exit --\n")
