@@ -98,17 +98,17 @@ class Engine:
     def set_player_settings(self):
         """Initialise the new start state for the player."""
 
-        player = game_data["player"]
+        player = self.game_data["player"]
 
         self.player = player(base_health=15, 
                              base_attack=1, 
                              base_defence=0, 
                              level=1, 
-                             current_location=game_data["locations"]["windengard"])
+                             current_location=self.game_data["locations"]["windergard"])
         
         # to be updated
         
-        self.player.current_location = "Caravan"
+        self.player.current_area = "Caravan"
         self.player.location_data = self.player.current_map.all_locations[self.player.current_location]
 
         welcome_text = "You arrive in Windengard, welcomed by an old man."
@@ -149,7 +149,7 @@ class Engine:
 
         # self.load_title_screen()
         # self.load_intro_text()
-        self.set_character_settings()
+        self.set_player_settings()
 
     def run_game(self):
         while self.game_running:

@@ -58,6 +58,11 @@ def create_location_folders(location_name):
         new_filepath = os.path.join(new_location_filepath, new_filename)
         os.rename(org_filepath, new_filepath)
 
+    init_filepath = os.path.join(new_location_filepath, "__init__.py")
+
+    with open(init_filepath, 'w') as new_file:
+        pass
+
     print(f"Location folder setup at {new_location_filepath}")
 
 # --------------------- Updating object data --------------------- #

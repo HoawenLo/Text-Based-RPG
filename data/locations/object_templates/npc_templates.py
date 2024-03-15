@@ -228,6 +228,15 @@ class Combat(Npc):
 class Dialogue:
 
     def __init__(self, text_crawl, add_adventurer, list_options):
+        """Text manipulation methods are added to the class.
+        
+        text_crawl: To crawl text
+        add_adventurer: Adds the adventurer: tag to front
+        of player chat text.
+        list_options: Lists the potential response options 
+        for the player."""
+
+
         self.text_crawl = text_crawl
         self.add_adventurer = add_adventurer
         self.list_options = list_options
@@ -237,26 +246,76 @@ class Dialogue:
     # ----------------- Run dialogue ----------------- #
 
     def run_dialogue(self):
+        """Run the dialogue by starting the recursion method
+        run_node()
+        
+        Args:
+            None
+            
+        Returns:
+            None"""
         self.run_node()
         
     # ----------------- Add dialogue node ----------------- #
 
     def initialise_node(self, dialogue_data):
+        """Initialise the node. This must be done for the
+        first node to set the current_node_pos to the initial
+        dialogue.
+        
+        Args:
+            dialogue_data: The first node data. Which is a tuple
+            of the format ("Dialogue text", dialogue.dialogue_npc).
+            
+        Returns:
+            None"""
+        
+        if not isinstance(dialogue_data, tuple):
+            raise TypeError(f"Input dialogue data must be a tuple. It is instead is a {type(dialogue_data)}. Dialogue data is {dialogue_data}.")
+        if len(dialogue_data) != 2:
+            raise ValueError(f"Length of dialogue data is not 2. Initial dialogue will always be of the format ('Dialogue text', dialogue.dialogue_npc). Instead input dialogue is {dialogue_data}")
+
         self.add_dialogue_node(dialogue_data)
         self.current_node_pos = dialogue_data
 
     def add_dialogue_node(self, dialogue_data):
+        """Add a dialogue node to the dictionary which stores all nodes.
+        
+        Args:
+            dialogue_data: The data for the dialogue node. Will be a tuple of format
+            ("dialogue text", dialogue.method) or if response node will be similar
+            but multiples of this format.
+            
+        Returns:
+            None"""
         if dialogue_data not in self.dialogue_nodes:
             self.dialogue_nodes[dialogue_data] = []
 
     def add_dialogue_edge(self, dialogue_data_one, dialogue_data_two):
+        """Add a dialogue edge to connect two nodes. Check dialogue nodes
+        exist as well, if not create them.
+        
+        Args:
+            dialogue_data_one: The front node to connect.
+            dialogue_data_two: The back node to connect the front node to."""
         self.add_dialogue_node(dialogue_data_one)
         self.add_dialogue_node(dialogue_data_two)
 
         self.connect_nodes(dialogue_data_one, dialogue_data_two)
 
     def connect_nodes(self, org_node, new_node):
-        print("node", new_node)
+        """Connect the nodes. Nodes connect from org_node
+        to new_node.
+
+        If length of new_node is 2, means it is a straight node hence
+        simple append to edges of the org_node.
+
+        Otherwise it will be a response node hence iterate through
+        and append all.
+        
+        Args:
+            org_node: The front node.
+            new_node: The back node."""
         if len(new_node) == 2:
             self.dialogue_nodes[org_node].append(new_node)
         else:
@@ -269,21 +328,30 @@ class Dialogue:
     # ----------------- Dialogue flow ----------------- #
     
     def run_node(self):
+        """Recursion method to call next node until reaching an end node where the 
+        current_node_pos will be set to None to end the recursive cycle."""
         if self.current_node_pos != None:
             self.return_next_node()
             input("")
             self.run_node()
 
     def return_next_node(self):
+        """A method to return the values of the next node.
+        
+        If next node is a straight node, length of node options will
+        be one.
+        
+        If next node is empty, hence the end of the dialogue, set
+        current_node_pos to None to end the recursion cycle.
+        
+        If next node is response node, the length of node options will
+        be greater than one. Run the run_response_node method."""
         node_options = self.retrieve_node_options()
-
-        print("node options", node_options)
 
         if len(node_options) == 1:
             self.run_straight_node(node_options)
         elif len(node_options) == 0:
-            self.run_straight_node(node_options)
-            self.current_node_pos = None
+            self.run_end_node()
         else:
             self.run_response_node(node_options)
 
@@ -291,27 +359,55 @@ class Dialogue:
         """Running a straight node moves straight away to the next
         node option as there is only one option.
         
-        First fetche the current node input and then run the current
+        First fetch the current node input and then run the current
         node function.
 
         Next get the next node and return it so it can be passed.
 
         Args:
-            node_options: The next node options."""
+            node_options: The next node options.
+            
+        Returns:
+            None"""
         current_node_input = self.current_node_pos[0]
         current_node_function = self.current_node_pos[1]
 
-        current_node_function(current_node_input)
+        print(current_node_function, current_node_input)
+
+        if current_node_function == self.run_special_function:
+            current_node_function(current_node_input)
+        elif current_node_function == self.end_dialogue:
+            self.dialogue_player(current_node_input)
+        else:
+            current_node_function(current_node_input)
 
         self.get_next_single_node(node_options)
         
     
     def run_response_node(self, node_options):
-        print(node_options)
+        """Run a response node. Response nodes are nodes which contain
+        responses. Unlike a straight node which only has one option.
+        
+        Args:
+            node_options: The next node options. This is where the 
+            responses will be sourced from.
+            
+        Returns:
+            None"""
+        print(f"run_response_node current_node_pos: {self.current_node_pos[1]}")
 
-
+        # pull out responses and show them
+        current_node_input = self.current_node_pos[0]
         current_node_function = self.current_node_pos[1]
-        current_node_function(node_options)
+        current_node_function(current_node_input)
+
+        self.show_responses(node_options)
+
+    def run_end_node(self):
+        """Run an end node. If the current node has no edges."""
+        current_node_function = self.current_node_pos[1]
+        current_node_function()
+
 
     # ----------------- Retrieving node data ----------------- #
     
@@ -319,7 +415,13 @@ class Dialogue:
         """Retrieves the next node options. If the next node is a
         response node, you will have multiple values in the node,
         otherwise the node is a straight node and will just be the
-        first value of the list."""
+        first value of the list.
+        
+        Args:
+            None
+            
+        Returns:
+            The next node options."""
         options = self.dialogue_nodes[self.current_node_pos]
         return options
 
@@ -327,7 +429,10 @@ class Dialogue:
         """Get the next single node which is a node with only one value.
         
         Args:
-            node_options: The next node options."""
+            node_options: The next node options.
+            
+        Returns:
+            None"""
         if len(node_options) != 0:
             next_node = node_options[0]
             self.current_node_pos = next_node
@@ -335,18 +440,86 @@ class Dialogue:
     # ----------------- Dialogue building blocks ----------------- #
 
     def dialogue_npc(self, dialogue):
+        """The npc dialogue. Text crawl the dialogue.
+        
+        Args:
+            dialogue: The dialogue, must be a string.
+            
+        Returns:
+            None"""
+        
+        if not isinstance(dialogue, str):
+            raise TypeError(f"Input dialogue is not str datatype. Instead dialogue is {type(dialogue)} datatype. Dialogue is {dialogue}.")
         self.text_crawl(dialogue)
 
     def dialogue_player(self, dialogue):
+        """The player dialogue. Add adventurer tag to the front.
+        Then text crawl the dialogue.
+        
+        Args:
+            dialogue: The dialogue, must be a string.
+            
+        Returns:
+            None"""
+        
+        if not isinstance(dialogue, str):
+            raise TypeError(f"Input dialogue is not str datatype. Instead dialogue is {type(dialogue)} datatype. Dialogue is {dialogue}.")
         player_dialogue = self.add_adventurer(dialogue)
         self.text_crawl(player_dialogue)
 
-    def run_special_function(self, function):
-        function()
+    def set_special_functions(self, special_functions):
+        """Set the special functions to be accessed later.
+        
+        Args:
+            special_functions: Must be a dictionary with a string key which matches
+            the special function.
+            
+        Return:
+            None"""
+        
+        if not isinstance(special_functions, dict):
+            raise TypeError(f"special_functions is not dictionary type. Instead is type {type(special_functions)}. Input is {special_functions}.")
+        
+        self.special_functions = special_functions
+
+    def run_special_function(self, node_input_value):
+        """Run a special utility function such as show items for a trader npc.
+        
+        Args:
+            function: The input function to be run.
+            node_input_values: Node input values match to the corresponding special function.
+            
+        Returns:
+            None"""
+        
+        special_function = self.special_functions[node_input_value]
+        special_function()
         
     def show_responses(self, node_options):
-        raw_responses = [data[0] for data in node_options]
-        chat_responses = {num: resp for num, resp in enumerate(raw_responses) }
+        """Show the possible player responses. Sourced from the next node that is pointed at.
+        Node is of the format:
+        (("text option one", option_one_function), ("text option two", option_two_function) dialogue.show_responses).
+        Where the dialogue.show_response is the dialogue.show_response method.
+        
+        Chat responses are then numbered with enumerate and then list options method is used to print out the
+        potential chat responses.
+
+        Logic then goes on to check if the response given is valid.
+
+        Finally get the node that the player responded to and set it to the current node position.
+
+        Args:
+            node_options: The node options being pointed at. Must be a list of tuples.
+
+        Returns:
+            None
+        """
+
+        if not isinstance(node_options, list):
+            raise TypeError(f"Node options is not a list. Instead type is {type(node_options)}. node_options is {node_options}.")
+
+        raw_responses = [data[0] for data in node_options[:-1]]
+        chat_responses = {str(num): resp for num, resp in enumerate(raw_responses) }
         self.list_options(chat_responses)
         response_options = chat_responses.keys()
 
@@ -357,12 +530,34 @@ class Dialogue:
                 continue
             break
         
-        next_node = node_options[int(response) - 1]
+        next_node = node_options[int(response)]
+        self.dialogue_player(next_node[0])
+
         self.current_node_pos = next_node
 
-    # ----------------- Viewing dialogue ----------------- #
+    def end_dialogue(self):
+        """Set the current node postion to None to end the 
+        dialogue.
+        
+        Args:
+            None
+            
+        Returns:
+            None"""
+        
+        self.current_node_pos = None
+
+
+    # ----------------- Viewing Nodes ----------------- #
 
     def display_dialogue(self):
+        """Display the dialogue. This is used to debug.
+        
+        Args:
+            None
+            
+        Returns:
+            None"""
         for node, neighbors in self.dialogue_nodes.items():
             print(f"{node}: {neighbors}")
 
@@ -374,24 +569,43 @@ if __name__ == "__main__":
 
     from text_manipulation import word_crawl, add_adventurer, list_chat_options 
 
+    def show_items():
+        print("item_one : 5g")
+        print("item_two : 5g")
+    special_functions = {"show items": show_items}
     dialogue = Dialogue(word_crawl, add_adventurer, list_chat_options)
+    dialogue.set_special_functions(special_functions)
 
-    a = ("Test", dialogue.dialogue_npc)
-    b = ("Test 2", dialogue.dialogue_player)
-    c = ((("end", "end dialogue function"), ("show items", dialogue.run_special_function), ("chat", dialogue.dialogue_npc), dialogue.show_responses))
 
-    print(len(a))
+
+
+    a = ("NPC: Hello", dialogue.dialogue_npc)
+    b = ("Hello", dialogue.dialogue_player)
+    c = ("NPC: How can I help?", dialogue.dialogue_npc)
+    d = ((("end", dialogue.end_dialogue), ("show items", dialogue.run_special_function), dialogue.show_responses))
+    e = ("end", dialogue.end_dialogue)
+    f = ("show items", dialogue.run_special_function)
+    g = ("chat", dialogue.dialogue_npc)
 
     dialogue.initialise_node(a)
     dialogue.add_dialogue_node(b)
     dialogue.add_dialogue_node(c)
-    
-    
+    dialogue.add_dialogue_node(d)
+    dialogue.add_dialogue_node(e)
+    dialogue.add_dialogue_node(f)
+    dialogue.add_dialogue_node(g)
 
     dialogue.add_dialogue_edge(a, b)
     dialogue.add_dialogue_edge(b, c)
+    dialogue.add_dialogue_edge(c, d)
+    dialogue.add_dialogue_edge(d, e)
+    dialogue.add_dialogue_edge(d, f)
+    dialogue.add_dialogue_edge(d, g)
+    dialogue.add_dialogue_edge(f, e)
+    dialogue.add_dialogue_edge(g, e)
+    
 
-    # dialogue.display_dialogue()
+    dialogue.display_dialogue()
 
     dialogue.run_dialogue()
 

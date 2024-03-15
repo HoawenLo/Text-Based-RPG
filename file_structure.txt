@@ -1,0 +1,18 @@
+├───data
+│   ├───items
+│   │
+│   ├───locations
+│   │   ├───object_templates
+│   │   │   
+│   │   └───windergard
+│   │   
+│   ├───player_mechanics
+│   │   
+│   ├───template_obj_creator
+│   │   ├───template_location
+│   │   
+│   └───text_data
+│   
+├───saved_states
+└───text_manipulation
+
