@@ -97,7 +97,7 @@ class Player:
     # ------------- inventory ------------- #
     
     def view_inventory(self):
-        """View all items in inventory"""
+        """View all items in inventory."""
         if len(self.inventory.keys()) == 0:
             print("Inventory empty.")
         else:
@@ -359,6 +359,22 @@ class Player:
         fetched_quest.run_quest()
         self.incompleted_quest_list[quest_reference] = fetched_quest.current_goal
 
+    # ------------- Viewing stats ------------- #
+
+    def view_stats(self):
+        """View stats.
+        
+        Args:
+            None
+            
+        Returns:
+            None"""
+        
+        print(f"Level: {self.level}")
+        print(f"Health: {self.current_health} / {self.base_health}")
+        print(f"Attack: {self.attack}")
+        print(f"Defence: {self.defence}")
+        print(f"Current Experience: {self.current_exp}/{self.level_limit}")
 
 if __name__ == "__main__":
 

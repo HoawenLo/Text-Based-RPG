@@ -53,15 +53,12 @@ def create_location_folders(location_name):
     shutil.copytree(template_location_filepath, new_location_filepath)
 
     for file in os.listdir(new_location_filepath):
-        new_filename = location_name + "_" + file
-        org_filepath = os.path.join(new_location_filepath, file)
-        new_filepath = os.path.join(new_location_filepath, new_filename)
-        os.rename(org_filepath, new_filepath)
+        if file != "__init__.py":
+            new_filename = location_name + "_" + file
+            org_filepath = os.path.join(new_location_filepath, file)
+            new_filepath = os.path.join(new_location_filepath, new_filename)
+            os.rename(org_filepath, new_filepath)
 
-    init_filepath = os.path.join(new_location_filepath, "__init__.py")
-
-    with open(init_filepath, 'w') as new_file:
-        pass
 
     print(f"Location folder setup at {new_location_filepath}")
 
