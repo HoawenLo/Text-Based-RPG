@@ -106,6 +106,8 @@ class Engine:
                              level=1, 
                              current_location=self.game_data["locations"]["windengard"])
         
+        
+
         # to be updated
         
         self.player.current_area = "Caravan"
@@ -137,7 +139,7 @@ class Engine:
                     self.run_game()
                     break
                 elif response == "no":
-                    self.player = self.load_saved_game("../saved_states/savegame.pkl")
+                    self.player = self.load_saved_game("../../saved_states/savegame.pkl")
                     self.game_running = True
                     self.run_game()
                     break
@@ -175,31 +177,7 @@ class Engine:
 
     # ------------------------------------- In game events cycle -------------------------------------
 
-    def return_equipped_names(self):
-        """Return the string names of equipped items.
-        
-        Args:
-            None
-            
-        Returns:
-            A tuple of the string names of the equipped items."""
-
-        return_item_names = item_utils["return_item_names"]
-
-        helmet_vals = self.player.equipped_helmet
-        helmet = return_item_names(helmet_vals)
-
-        chestplate_vals = self.player.equipped_chestplate
-        chestplate = return_item_names(chestplate_vals)
-
-        weapon_vals = self.player.equipped_weapon
-        weapon = return_item_names(weapon_vals)
-
-        ring_vals = self.player.equipped_ring
-        ring = return_item_names(ring_vals)
-        
-        equipped_items = (helmet, chestplate, weapon, ring)
-        return equipped_items
+    
 
     # add inventory storage value
     def show_ingame_menu(self, line_length=71):
@@ -210,9 +188,12 @@ class Engine:
             Default is 51.
             available_interactions: The available interactions of the place."""
         
+        print(self.player)
+
         line = "-" * line_length
 
-        available_interactions = self.player.area_data["interactions"]
+        available_interactions = list(self.player.area_data["interactions"])
+        available_interactions = self.fill_interaction_gaps(available_interactions)
 
         equipped_items = self.return_equipped_names()
         
@@ -273,11 +254,11 @@ class Engine:
             
     def interactions_response(self):
         """Fetch the interaction response and run it if valid."""
-        response = self.fetch_response()
         interactions = self.player.area_data["interactions"]
+        response = self.show_interactions(interactions)
 
-        if response not in interactions.keys() or response == "":
-            print("Invalid interaction")
+        if response == "Exit":
+            pass
 
         if response in interactions.keys():
             interactions[response].run_logic()
@@ -308,7 +289,93 @@ class Engine:
     def save_exit_response(self):
         """Close game and save state."""
         self.game_running = False
-        self.save_game("saved_states/savegame.pkl")
+
+        script_filepath = os.path.abspath(__file__)
+        saved_state_filepath = os.path.join(script_filepath, "..", "..", "saved_states\\savegame.pkl")
+        self.save_game(saved_state_filepath)
+
+    # ------------------------------------- Engine utils ------------------------------------- #
+    # To be moved to somewhere else
+        
+    def show_interactions(self, interactions):
+        """Show interactions.
+        
+        Args:
+            interactions: Input interactions
+            
+        Returns:
+            The corresponding interaction."""
+
+        interaction_vals = {"0":"exit"}
+
+        avail_interactions = list(interactions.keys())
+
+        print("Select interaction: ")
+        print("0 : Exit")
+        for i, interaction in enumerate(avail_interactions[1:]):
+            if interaction != "":
+                print(f"{i + 1} : {interaction}")
+                interaction_vals[str(i + 1)] = interaction
+
+        while True:
+            response = self.fetch_response()
+            if response not in list(interaction_vals.keys()):
+                print("Invalid input. Input valid number for the response.")
+                continue
+            else:
+                break
+        
+        interaction_response = interaction_vals[response]
+
+        return interaction_response
+
+
+
+    def return_equipped_names(self):
+        """Return the string names of equipped items.
+        
+        Args:
+            None
+            
+        Returns:
+            A tuple of the string names of the equipped items."""
+
+        return_item_names = item_utils["return_item_names"]
+
+        helmet_vals = self.player.equipped_helmet
+        helmet = return_item_names(helmet_vals)
+
+        chestplate_vals = self.player.equipped_chestplate
+        chestplate = return_item_names(chestplate_vals)
+
+        weapon_vals = self.player.equipped_weapon
+        weapon = return_item_names(weapon_vals)
+
+        ring_vals = self.player.equipped_ring
+        ring = return_item_names(ring_vals)
+        
+        equipped_items = (helmet, chestplate, weapon, ring)
+        return equipped_items
+
+    def fill_interaction_gaps(self, interactions_input):
+        """Fill any interactions gap.
+        
+        Args:
+            interactions_input: The interactions input as a list.
+            
+        Returns:
+            A list of interactions with spaces filled if length of interactions
+            list is not 6. Else just return the original interactions list."""
+        
+        if len(interactions_input) != 6:
+            missing_spaces = 6 - len(interactions_input)
+
+            for _ in range(missing_spaces):
+                interactions_input.append("")
+
+            return interactions_input
+
+        return interactions_input
     
     
 if __name__ == "__main__":

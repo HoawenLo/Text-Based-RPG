@@ -24,22 +24,22 @@ class Location():
         if not isinstance(area_name, str):
             raise TypeError(f"Input area_name is not string datatype, area_name is type {type(area_name)}.")
         if not isinstance(move_areas, dict):
-            raise TypeError(f"Input move_areas is not list datatype, move_areas is type {type(move_areas)}.")
-        if not isinstance(quests, list):
-            raise TypeError(f"Input quests is not list datatype, quests is type {type(quests)}.")
-        if not isinstance(interactions, list):
-            raise TypeError(f"Input interactions is not list datatype, interactions is type {type(interactions)}.")
-        if not isinstance(npcs, list):
-            raise TypeError(f"Input npcs is not list datatype, npcs is type {type(npcs)}.")
+            raise TypeError(f"Input move_areas is not dictionary datatype, move_areas is type {type(move_areas)}.")
+        if not isinstance(quests, dict):
+            raise TypeError(f"Input quests is not dictionary datatype, quests is type {type(quests)}.")
+        if not isinstance(interactions, dict):
+            raise TypeError(f"Input interactions is not dictionary datatype, interactions is type {type(interactions)}.")
+        if not isinstance(npcs, dict):
+            raise TypeError(f"Input npcs is not dictionary datatype, npcs is type {type(npcs)}.")
         if len(interactions) > 5:
             raise ValueError(f"Length of interactions is greater than 5. Length of interactions is {len(interactions)}.")
 
-        interactions_front = ["Available interactions: "]
-        interactions_template = interactions_front + interactions
+        interactions_full = {"Available interactions: ":""}
+        interactions_full.update(interactions)
 
         area_data = {"areas":move_areas,
                      "quests":quests, 
-                     "interactions":interactions_template, 
+                     "interactions":interactions_full, 
                      "npcs":npcs}
         
         setattr(self, area_name, area_data)
