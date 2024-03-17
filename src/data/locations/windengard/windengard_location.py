@@ -4,7 +4,8 @@ windergard = Location()
 
 # Notes on create area interactions not longer than 5
 
-windergard.create_area("Caravan", ["Town Square"], [None], ["test", "test2", "", "", ""], [None])
+windergard.create_area("Caravan", {"1":"Town Square", "2":"Cancel"}, [None], ["test", "test2", "", "", ""], [None])
+windergard.create_area("Town Square", {"1":"Blacksmith", "2":"Training ground", "3":"General store", "4":"Inn", "5":"Cancel"}, [None], ["test", "test2", "", "", ""], [None])
 
 all_areas = windergard.all_areas
 

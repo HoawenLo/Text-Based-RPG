@@ -3,11 +3,7 @@ import os
 
 from random import randint
 
-script_dir = os.path.dirname(os.path.realpath(__file__))
-relative_path = os.path.join(script_dir, '..', '..', 'text_manipulation')
-sys.path.append(relative_path)
-
-from text_manipulation import *
+from ...text_manipulation.text_manipulation import *
 
 class Player:
 
@@ -74,7 +70,17 @@ class Player:
     # ------------- movement ------------- #
         
     def move(self):
+        """Move the character to a new area.
 
+        Pull the list of areas that the player can move to.
+        List the areas.
+        Take player response on where to move to.
+        
+        Args:
+            None
+            
+        Returns:
+            None"""
         available_areas = self.area_data["areas"]
 
         list_areas = ""
@@ -90,9 +96,13 @@ class Player:
         
         if next_area_num not in available_areas.keys():
             print("Invalid area.")
+        elif available_areas[next_area_num] == "Cancel":
+            pass
         else:
             self.current_area = available_areas[next_area_num]
-            self.area_data = getattr(self.current_location, available_areas[next_area_num])
+
+            print(self.current_location.all_areas[available_areas[next_area_num]])
+            self.area_data = self.current_location.all_areas[available_areas[next_area_num]]
 
     # ------------- inventory ------------- #
     
@@ -108,6 +118,8 @@ class Player:
                 else:
                     for _ in range(item_number):
                         print(f"1 x {item.item_name}")
+
+    
 
     def pickup_item(self, item):
         """Pickup item to store in inventory.
@@ -143,6 +155,44 @@ class Player:
 
             if self.inventory[item] == 0:
                 del self.inventory[item]
+    
+    def drop_items_section(self, item_database):
+        """Run a while loop to drop items.
+        
+        Args:
+            item_database: The item database to access all item values.
+            
+        Returns:
+            None"""
+
+        drop_items = input("Would you like to drop items?\n -- 1 yes -- 2 no -- \nResponse: ")
+        while True:
+            if drop_items == "1":
+                drop_item_name = input("Type item name: ")
+                if drop_item_name not in list(item_database.keys()):
+                    print("Item does not exist. Perhaps you typed it incorrectly?")
+                else:
+                    self.drop_item(item_database[drop_item_name])
+                    self.view_inventory()
+            elif drop_items == "2":
+                break
+            else:
+                print("Type 1 or 2.")
+
+
+    def run_inventory_interaction(self, item_database):
+        """Run the inventory interaction to view inventory
+        or drop items in the inventory.
+        
+        Args:
+            item_database: The item database to access all item values.
+            
+        Returns:
+            None"""
+        
+        self.view_inventory()
+        if len(self.inventory.keys()) != 0:
+            self.drop_items_section(item_database)
 
     # ------------- Using items ------------- #
                 
@@ -329,6 +379,118 @@ class Player:
             equipped_item = None
             
             item.execute_passive_effect(self, equip_flag=False)
+
+    def view_equipped(self):
+        """Show equipped items after equipping or unequipping.
+        
+        Args:
+            None
+        
+        Returns:
+            None"""
+
+        if self.equipped_helmet != None:
+            helmet_name = self.equipped_helmet.item_name
+        else:
+            helmet_name = None
+
+        if self.equipped_chestplate != None:
+            chestplate_name = self.equipped_chestplate.item_name
+        else:
+            chestplate_name = None
+
+        if self.equipped_weapon != None:
+            weapon_name = self.equipped_weapon.item_name
+        else:
+            weapon_name = None
+
+        if self.equipped_ring != None:
+            ring_name = self.equipped_ring.item_name
+        else:
+            ring_name = None
+
+        print("Equipped Items:")
+        print(f"Helmet: {helmet_name}")
+        print(f"Chestplate: {chestplate_name}")
+        print(f"Weapon: {weapon_name}")
+        print(f"Ring: {ring_name}")
+
+    def check_equipped_empty(self):
+        """Check if equipped item are empty."""
+
+        equipped_items = [self.equipped_helmet, self.equipped_chestplate, self.equipped_weapon, self.equipped_ring]
+        counter = 0
+
+        for item in equipped_items:
+            if item == None:
+                counter += 1
+
+        if counter == 4:
+            return True
+        else:
+            return False
+
+    def equip_logic(self, item_database):
+        """Run the equip logic.
+        
+        Args:
+            item_database: The item database to refer to all existing items.
+            
+        Returns:
+            None"""
+        self.view_equipped()
+        if len(self.inventory.keys()) != 0:
+            self.show_equippable()
+            equip_item_name = input("Type item name: ")
+            if equip_item_name not in list(item_database.keys()):
+                print("Item does not exist. Perhaps you typed it incorrectly?")
+            else:
+                self.equip_item(item_database[equip_item_name])
+                self.view_equipped()
+                self.view_stats()
+        else:
+            print("Inventory empty.")
+
+    def unequip_logic(self, item_database):
+        """Run unequip logic.
+        
+        Args:
+            item_database: The item database to refer to all existing items.
+            
+        Returns:
+            None"""
+        self.view_equipped()
+        equipped_check = self.check_equipped_empty()
+        if equipped_check:
+            print("No items equipped.")
+        else:
+            equip_item_name = input("Type item name: ")
+            if equip_item_name not in list(item_database.keys()):
+                print("Item does not exist. Perhaps you typed it incorrectly?")
+            else:                    
+                self.unequip_item(item_database[equip_item_name])
+                self.view_equipped()
+                self.view_stats()
+
+    def run_equip_interaction(self, item_database):
+        """Run equip items interaction. 
+        
+        Args:
+            None
+            
+        Returns:
+            None"""
+        
+        while True:
+            equip_command = input("-- 1 equip items -- 2 unequip items -- 3 exit --\nResponse: ")
+            if equip_command == "1":
+                self.equip_logic(item_database)
+            elif equip_command == "2":
+                self.unequip_logic(item_database)
+            elif equip_command == "3":
+                break
+            else:
+                print("Type 1, 2 or 3.")
 
     # ------------- Quests ------------- #
             

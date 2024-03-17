@@ -12,7 +12,8 @@ class Location():
         
         Args:
             area_name: The name of area as a string.
-            move_areas: A list of the areas that can be moved to.
+            move_areas: A dictionary of the areas that can be moved to.
+            Dictionary is of format {num:area_name, ...}
             quests: A list of the quests available in the area.
             interactions: A list of the interactions available in the area.
             npcs: A list of the npcs available in the area.
@@ -22,7 +23,7 @@ class Location():
         
         if not isinstance(area_name, str):
             raise TypeError(f"Input area_name is not string datatype, area_name is type {type(area_name)}.")
-        if not isinstance(move_areas, list):
+        if not isinstance(move_areas, dict):
             raise TypeError(f"Input move_areas is not list datatype, move_areas is type {type(move_areas)}.")
         if not isinstance(quests, list):
             raise TypeError(f"Input quests is not list datatype, quests is type {type(quests)}.")

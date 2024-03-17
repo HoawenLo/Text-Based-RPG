@@ -1,8 +1,8 @@
 import pickle
 import os
 
-from text_manipulation.text_manipulation import *
-from data.game_data import game_data, item_utils
+from src.text_manipulation.text_manipulation import *
+from src.data.game_data import game_data, item_utils
 
 
 # Connects the data to the player and handles input.
@@ -175,6 +175,32 @@ class Engine:
 
     # ------------------------------------- In game events cycle -------------------------------------
 
+    def return_equipped_names(self):
+        """Return the string names of equipped items.
+        
+        Args:
+            None
+            
+        Returns:
+            A tuple of the string names of the equipped items."""
+
+        return_item_names = item_utils["return_item_names"]
+
+        helmet_vals = self.player.equipped_helmet
+        helmet = return_item_names(helmet_vals)
+
+        chestplate_vals = self.player.equipped_chestplate
+        chestplate = return_item_names(chestplate_vals)
+
+        weapon_vals = self.player.equipped_weapon
+        weapon = return_item_names(weapon_vals)
+
+        ring_vals = self.player.equipped_ring
+        ring = return_item_names(ring_vals)
+        
+        equipped_items = (helmet, chestplate, weapon, ring)
+        return equipped_items
+
     # add inventory storage value
     def show_ingame_menu(self, line_length=71):
         """Shows the player menu.
@@ -188,24 +214,12 @@ class Engine:
 
         available_interactions = self.player.area_data["interactions"]
 
-        return_item_names = item_utils["return_item_names"]
-
-        helmet_vals = self.player.equipped_helmet
-        helmet = return_item_names(helmet_vals)
-
-        weapon_vals = self.player.equipped_weapon
-        weapon = return_item_names(weapon_vals)
-
-        chestplate_vals = self.player.equipped_chestplate
-        chestplate = return_item_names(chestplate_vals)
-
-        ring_vals = self.player.equipped_ring
-        ring = return_item_names(ring_vals)
-
+        equipped_items = self.return_equipped_names()
+        
         print(f"Health: {self.player.current_health} / {self.player.base_health}    Current Area: {self.player.current_area}    Gold: {self.player.gold}    Inventory space: {self.player.inventory_size} / {self.player.max_inventory_size}")
         print(line)
-        print(combine_characters(f"Helmet {helmet}", f"Leggings: {weapon}", line_length=51))
-        print(combine_characters(f"Chestplate: {chestplate}", f"Ring: {ring}", line_length=51))
+        print(combine_characters(f"Helmet {equipped_items[0]}", f"Weapon: {equipped_items[2]}", line_length=51))
+        print(combine_characters(f"Chestplate: {equipped_items[1]}", f"Ring: {equipped_items[3]}", line_length=51))
         print(line)
         for i in range(len(self.player_menu_options)):
             print(combine_characters(self.player_menu_options[i], available_interactions[i], line_length=51))
@@ -244,16 +258,16 @@ class Engine:
     def inventory_response(self):
         """Show inventory options."""
         while True:
-            print("Select -- 1 Inventory -- 2 Equipped -- 3 Exit --\n")
+            print("Select -- 1 Inventory -- 2 Equipped -- 3 Exit --")
             response = self.fetch_response()
             
             if response not in self.inventory_menu_responses:
                 print("Type 1, 2 or 3\n")
 
             if response == "1":
-                self.player.inventory_menu()
+                self.player.run_inventory_interaction(game_data["items"])
             elif response == "2":
-                self.player.equipped_menu()
+                self.player.run_equip_interaction(game_data["items"])
             elif response == "3":
                 break
             

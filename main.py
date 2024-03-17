@@ -1,4 +1,4 @@
-import engine as game
+import src.engine as game
 
 if __name__ == "__main__":
     engine = game.Engine()
