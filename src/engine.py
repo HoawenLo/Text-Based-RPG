@@ -188,8 +188,6 @@ class Engine:
             Default is 51.
             available_interactions: The available interactions of the place."""
         
-        print(self.player)
-
         line = "-" * line_length
 
         available_interactions = list(self.player.area_data["interactions"])
@@ -269,7 +267,7 @@ class Engine:
     def quests_response(self):
         """Open quest menu and run valid quest action."""
         while True:
-            print("Select -- 1 Completed -- 2 Ongoing -- 3 Exit --\n")
+            print("Select -- 1 Completed -- 2 Ongoing -- 3 Exit --")
             response = self.fetch_response()
 
             if response not in self.quest_menu_responses:

@@ -1,4 +1,5 @@
 from random import randint
+import time
 
 class Npc:
     """The base general npc class. This type of npc provides dialogue to the player."""
@@ -227,20 +228,7 @@ class Combat(Npc):
             
 class Dialogue:
 
-    def __init__(self, text_crawl, add_adventurer, list_options):
-        """Text manipulation methods are added to the class.
-        
-        text_crawl: To crawl text
-        add_adventurer: Adds the adventurer: tag to front
-        of player chat text.
-        list_options: Lists the potential response options 
-        for the player."""
-
-
-        self.text_crawl = text_crawl
-        self.add_adventurer = add_adventurer
-        self.list_options = list_options
-
+    def __init__(self):
         self.dialogue_nodes = {}
 
     # ----------------- Run dialogue ----------------- #
@@ -561,6 +549,53 @@ class Dialogue:
         for node, neighbors in self.dialogue_nodes.items():
             print(f"{node}: {neighbors}")
 
+    # ----------------- Text manipulation ----------------- #
+            
+    def word_crawl(self, text, line_length=60, text_speed=0.1):
+        """Used to crawl text. Crawls words instead of 
+        single characters.
+        
+        Args:
+            text: The sentence to be crawled.
+            line_length: Sets the length of the line.
+            If has a large body of text, will move 
+            onto next line if line length reached."""
+
+        words = text.split()
+        current_line = ""
+
+        for word in words:
+            if len(current_line) + len(word) + 1 <= line_length:
+                current_line += word + " "
+            else:
+                print(current_line)
+                current_line = word + " "
+                time.sleep(text_speed)
+
+            print(current_line, end="\r")
+            time.sleep(text_speed)
+
+        print(current_line)
+
+    def add_adventurer(self, text):
+        """Add adventurer to the start of the next.
+        
+        Args:
+            text: The text to add adventurer to."""
+        return "Adventurer: " + text
+    
+    def list_chat_options(self, chat_options):
+        """Takes a dictionary of chat options and prints it.
+        
+        Args:
+            chat_options: The chat options to print."""
+        
+        for num, text in chat_options.items():
+            display_text = num + ": " + text
+            print(display_text)
+
+            
+
 if __name__ == "__main__":
     import sys
 
@@ -575,9 +610,6 @@ if __name__ == "__main__":
     special_functions = {"show items": show_items}
     dialogue = Dialogue(word_crawl, add_adventurer, list_chat_options)
     dialogue.set_special_functions(special_functions)
-
-
-
 
     a = ("NPC: Hello", dialogue.dialogue_npc)
     b = ("Hello", dialogue.dialogue_player)
@@ -604,7 +636,6 @@ if __name__ == "__main__":
     dialogue.add_dialogue_edge(f, e)
     dialogue.add_dialogue_edge(g, e)
     
-
     dialogue.display_dialogue()
 
     dialogue.run_dialogue()
