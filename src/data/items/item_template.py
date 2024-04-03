@@ -56,15 +56,32 @@ class EffectItem(Item):
 
 class BasicWeapon(Item):
     """Encompasses basic weapons - weapons with no effects."""
-    def __init__(self, item_name, item_description, item_stack, value, attack, defence):
+    def __init__(self, item_name, item_description, item_stack, value, attack, defence, health):
         super().__init__(item_name, item_description, item_stack, value)
 
         self.attack = attack
         self.defence = defence
+        self.health = health
 
 class SpecialWeapon(BasicWeapon, EffectItem):
     """Encompasses special weapons - weapons with effects."""
-    def __init__(self, item_name, item_description, item_stack, value, attack, defence):
-        super(BasicWeapon, self).__init__(item_name, item_description, item_stack, value, attack, defence)
+    def __init__(self, item_name, item_description, item_stack, value, attack, defence, health):
+        super(BasicWeapon, self).__init__(item_name, item_description, item_stack, value, attack, defence, health)
         super(EffectItem, self).__init__(attack, defence)
 
+class BasicArmour(Item):
+    """Encompasses basic armour pieces - armour with no effects."""
+    def __init__(self, item_name, item_description, item_stack, value, attack, defence, health):
+        super().__init__(item_name, item_description, item_stack, value)
+
+        self.attack = attack
+        self.defence = defence
+        self.health = health
+
+class SpecialArmour(BasicWeapon, EffectItem):
+    """Encompasses special armour pieces - armour pieces with effects."""
+    def __init__(self, item_name, item_description, item_stack, value, attack, defence, health):
+        super(BasicArmour, self).__init__(item_name, item_description, item_stack, value, attack, defence, health)
+        super(EffectItem, self).__init__(attack, defence)
+
+        

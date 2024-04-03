@@ -30,42 +30,227 @@ class Quest(Npc):
 class SellTrader(Npc):
     """Trader npcs provide products and services to the player. They will with funnel into the locations module, 
     which will allow interactions with items in the data module."""
-    def __init__(self, dialogue, name, products):
+    def __init__(self, dialogue, name, products, item_data):
         super().__init__(dialogue, name)
 
         self.npc_type = "trader"
         self.products = products
+        self.item_database = item_data.item_database
         self.character_reference = None
 
     def show_products(self):
-        """Display the products available for sale."""
-        for product in self.products.values():
-            print(f"{product.item_name} : {product.item_description} : {product.value} gold")
+        """Display the products available for sale.
+        
+        Args:
+            None
+        
+        Returns:    
+            None"""
+        
+        for index, product_tag in self.products.items():
+            product = self.item_database[product_tag]
+            print(f"{index} {product.item_name} : {product.item_description} : {product.value} gold")
+        
+    def buy_items(self, item_input):
+        """Initiate a buy method for the character.
+        
+        Args:
+            item_input: The item input as a string."""
+        
+        all_items = list(self.item_database.keys())
+
+        if item_input in all_items:
+            fetched_item = self.item_database[item_input]
+            self.character_reference.buy_item(fetched_item)
+
+    def run_buy_response(self):
+        """Run a input to get the player buy response.
+        
+        Args:
+            None
+            
+        Returns:
+            A string, the response of the player which corresponds
+            to an item."""
+
+        response = input("State the number of the item you would like to purchase or type 0 to exit.\n")
+
+        return response
+
+    def fetch_item(self, item_tag):
+        """Fetch item from database.
+        
+        Args:
+            item_name: The item name that will be used to access the value 
+            from the item database dictionary.
+            
+        Returns:
+            An object of the item."""
+        
+        product_tag = self.products[item_tag]
+        fetched_item = self.item_database[product_tag]
+
+        return fetched_item
+
+    def continue_interaction(self):
+        """Method to initiate whether to continue buy or sell interaction.
+        
+        Args:
+            None
+            
+        Returns:
+            Returns true to finish interaction, whilst returns false to
+            continue interaction."""
+        
+        while True:
+            response = input("Anything else: 1 yes / 2 no\n")
+
+            if response == "1" or response == "2":
+                break
+            
+            print("Invalid response, type 1 or 2.")
+
+        if response == "1":
+            return True
+        elif response == "2":
+            return False
+
+
+    def display_sellable_items(self, player_inventory_items):
+        """Calculates the value of items in the inventory that the trader is willing to buy.
+        Then displays these sellable items.
+        
+        Args:
+            player_inventory_items: A reference to the player's inventory.
+            
+        Returns:
+            A dicitonary of sellable items."""
+        
+        sellable_items = {}
+
+        print("Items that can be sold: ")
+        for i, inventory_item in enumerate(player_inventory_items):
+            sellable_items[str(i + 1)] = inventory_item
+            print(f"{i + 1} {inventory_item.item_name} : {inventory_item.item_description} : : {inventory_item.value // 2} gold")
+
+        return sellable_items
+
+    def run_sell_response(self):
+        """Run a input to get the player sell response.
+        
+        Args:
+            None
+            
+        Returns:
+            A string, the response of the player which corresponds
+            to an item."""
+
+        response = input("State the number of the item you would like to sell or type 0 to exit.\n")
+
+        return response
+
+    def sell_items(self, item_input):
+        """Initiate a sell method for the character.
+        
+        Args:
+            item_input: The item input as a string."""
+        
+        all_items = list(self.item_database.keys())
+
+        if item_input in all_items:
+            fetched_item = self.item_database[item_input]
+            self.character_reference.sell_item(fetched_item)
+
+    def trader_methods(self, method="buy_items"):
+        """Holds all trader methods.
+        
+        Args:
+            method: The method to retrieve. If buy_items,
+            return the purchase sequence. If sell_items, return
+            the sell sequence
+            
+        Returns:
+            The corresponding trading method."""
+        
+        if method != "buy_items" or method != "sell_items":
+            raise ValueError(f"Invalid method input. Must be buy_items or sell_items, instead input is {method}.")
+        
+        def run_purchase_sequence():
+            """Run a buy sequence. Buy sequence consists of a while loop with
+            the following order.
+            
+            Show products.
+            Request for a response.
+            Either buy item or exit.
+            If buy item run buy item method.
+            Request to continue the loop, if so go to the start.
+            
+            Args:
+                None
+                
+            Returns:
+                None"""
+            
+            while True:
+                self.show_products()
+                response = self.run_buy_response()
+
+                if response == "0":
+                    break
+
+                if response not in self.products.keys():
+                    print("Invalid number.")
+                    continue
+                
+                fetched_item  = self.fetch_item(response)
+                self.buy_items(fetched_item)
+                continue_interaction_resp = self.continue_interaction()
+
+                if continue_interaction_resp:
+                    break
+
+        def run_sell_sequence():
+            """Run a sell sequence. Sell sequence consists of a while loop with
+            the following order.
+            
+            Show player inventory.
+            Request for a response.
+            Either sell item or exit.
+            If sell item run sell item method.
+            Request to continue the loop, if so go to the start.
+            
+            Args:
+                None
+                
+            Returns:
+                None"""
+            
+            while True:
+                sellable_items = self.display_sellable_items()
+                response = self.run_sell_response()
+
+                if response == "0":
+                    break
+
+                if response not in sellable_items.keys():
+                    print("Invalid number.")
+                    continue
+                
+                fetched_item  = self.fetch_item(response)
+                self.sell_items(fetched_item)
+                continue_interaction_resp = self.continue_interaction()
+
+                if continue_interaction_resp:
+                    break
+
+        if method == "buy_items":
+            return run_purchase_sequence
+        elif method == "sell_items":
+            return run_sell_sequence
 
     def run_trading_dialogue(self, dialogue_active):
         """Run trading dialogue. This is a special type of dialogue which allows buy/sell interactions with the player."""
-        self.dialogue_text(dialogue_active, self.show_products, self.items)
-
-
-class BuySellTrader(SellTrader):
-
-    def __init__(self, dialogue, name, products):
-        super().__init__(dialogue, name, products)
-
-    def calculate_buy_values(self, player_inventory_items):
-        """Calculates the value of items in the inventory that the trader is willing to buy. 
-        
-        Args:
-            player_inventory_items: A reference to the player's inventory."""
-        
-        print("Items that can be sold: ")
-        for inventory_item in player_inventory_items:
-            print(f"{inventory_item.item_name} : {inventory_item.value // 2} gold")
-
-    def run_trading_dialogue(self, dialogue_active):
-        self.dialogue_text(dialogue_active, self.show_products, self.calculate_buy_values, self.items, self.character_reference)
-
-    
+        self.dialogue_text(dialogue_active, self.trader_methods, self.item_database, self.character_reference)
 
 class Combat(Npc):
 
@@ -360,7 +545,7 @@ class Dialogue:
         current_node_input = self.current_node_pos[0]
         current_node_function = self.current_node_pos[1]
 
-        print(current_node_function, current_node_input)
+        print("current node_function", current_node_function, "current node input", current_node_input)
 
         if current_node_function == self.run_special_function:
             current_node_function(current_node_input)
@@ -438,7 +623,7 @@ class Dialogue:
         
         if not isinstance(dialogue, str):
             raise TypeError(f"Input dialogue is not str datatype. Instead dialogue is {type(dialogue)} datatype. Dialogue is {dialogue}.")
-        self.text_crawl(dialogue)
+        self.word_crawl(dialogue)
 
     def dialogue_player(self, dialogue):
         """The player dialogue. Add adventurer tag to the front.
@@ -453,7 +638,7 @@ class Dialogue:
         if not isinstance(dialogue, str):
             raise TypeError(f"Input dialogue is not str datatype. Instead dialogue is {type(dialogue)} datatype. Dialogue is {dialogue}.")
         player_dialogue = self.add_adventurer(dialogue)
-        self.text_crawl(player_dialogue)
+        self.word_crawl(player_dialogue)
 
     def set_special_functions(self, special_functions):
         """Set the special functions to be accessed later.
@@ -480,8 +665,15 @@ class Dialogue:
         Returns:
             None"""
         
+        print("running special function", self.special_functions, "node_input_value", node_input_value)
+
+        print(self.special_functions)
+
         special_function = self.special_functions[node_input_value]
-        special_function()
+        
+        pulled_function = special_function(node_input_value)
+        pulled_function()
+        
         
     def show_responses(self, node_options):
         """Show the possible player responses. Sourced from the next node that is pointed at.
@@ -508,7 +700,7 @@ class Dialogue:
 
         raw_responses = [data[0] for data in node_options[:-1]]
         chat_responses = {str(num): resp for num, resp in enumerate(raw_responses) }
-        self.list_options(chat_responses)
+        self.list_chat_options(chat_responses)
         response_options = chat_responses.keys()
 
         while True:
@@ -597,47 +789,69 @@ class Dialogue:
             
 
 if __name__ == "__main__":
-    import sys
 
-    filepath = r"C:\Users\Hoawen\Desktop\Programming\Python\Text based rpg\Alpha Version 2\text_manipulation"
-    sys.path.append(filepath)
+    def trader_dialogue_package(*args):
+        """Dialogue package for trader.
+        
+        Args:
+            *args: Accepts any number of arguments as 
+            run_dialogue method for NPC varies.
 
-    from text_manipulation import word_crawl, add_adventurer, list_chat_options 
+        Returns:
+            None
+        """
 
-    def show_items():
-        print("item_one : 5g")
-        print("item_two : 5g")
-    special_functions = {"show items": show_items}
-    dialogue = Dialogue(word_crawl, add_adventurer, list_chat_options)
-    dialogue.set_special_functions(special_functions)
+        trader_dialogue = Dialogue()
 
-    a = ("NPC: Hello", dialogue.dialogue_npc)
-    b = ("Hello", dialogue.dialogue_player)
-    c = ("NPC: How can I help?", dialogue.dialogue_npc)
-    d = ((("end", dialogue.end_dialogue), ("show items", dialogue.run_special_function), dialogue.show_responses))
-    e = ("end", dialogue.end_dialogue)
-    f = ("show items", dialogue.run_special_function)
-    g = ("chat", dialogue.dialogue_npc)
+        if len(list(args)) == 4:
+            special_functions = {"show_products":args[1]}
+            trader_dialogue.set_special_functions(special_functions)
 
-    dialogue.initialise_node(a)
-    dialogue.add_dialogue_node(b)
-    dialogue.add_dialogue_node(c)
-    dialogue.add_dialogue_node(d)
-    dialogue.add_dialogue_node(e)
-    dialogue.add_dialogue_node(f)
-    dialogue.add_dialogue_node(g)
+        # Dialogue below
+            
+        a = ("Trader: Hello", trader_dialogue.dialogue_npc)
+        b = ("Hello", trader_dialogue.dialogue_player)
+        c = ("NPC: How can I help?", trader_dialogue.dialogue_npc)
+        d = ((("end", trader_dialogue.end_dialogue), ("show_products", trader_dialogue.run_special_function), trader_dialogue.show_responses))
+        e = ("end", trader_dialogue.end_dialogue)
+        f = ("show_products", trader_dialogue.run_special_function)
+        g = ("chat", trader_dialogue.dialogue_npc)
+        h = ("buy_items")
 
-    dialogue.add_dialogue_edge(a, b)
-    dialogue.add_dialogue_edge(b, c)
-    dialogue.add_dialogue_edge(c, d)
-    dialogue.add_dialogue_edge(d, e)
-    dialogue.add_dialogue_edge(d, f)
-    dialogue.add_dialogue_edge(d, g)
-    dialogue.add_dialogue_edge(f, e)
-    dialogue.add_dialogue_edge(g, e)
-    
-    dialogue.display_dialogue()
+        trader_dialogue.initialise_node(a)
+        trader_dialogue.add_dialogue_node(b)
+        trader_dialogue.add_dialogue_node(c)
+        trader_dialogue.add_dialogue_node(d)
+        trader_dialogue.add_dialogue_node(e)
+        trader_dialogue.add_dialogue_node(f)
+        trader_dialogue.add_dialogue_node(g)
 
-    dialogue.run_dialogue()
+        trader_dialogue.add_dialogue_edge(a, b)
+        trader_dialogue.add_dialogue_edge(b, c)
+        trader_dialogue.add_dialogue_edge(c, d)
+        trader_dialogue.add_dialogue_edge(d, e)
+        trader_dialogue.add_dialogue_edge(d, f)
+        trader_dialogue.add_dialogue_edge(d, g)
+        trader_dialogue.add_dialogue_edge(f, e)
+        trader_dialogue.add_dialogue_edge(g, e)
 
-    
+        trader_dialogue.run_dialogue()
+
+    class test_items:
+
+        def __init__(self, item_name, value, item_description):
+            self.item_name = item_name
+            self.value = value
+            self.item_description = item_description
+
+    test = test_items("test", 2, "desc")
+    test_two = test_items("test two", 3, "desc 2")
+
+
+    products = {"test":test, "test2":test_two}
+
+
+    test_npc = SellTrader(trader_dialogue_package, "test_npc", products=products, item_database=None)
+    test_npc.run_trading_dialogue(dialogue_active=True)
+
+        

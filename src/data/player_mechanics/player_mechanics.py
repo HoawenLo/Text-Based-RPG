@@ -194,6 +194,42 @@ class Player:
         if len(self.inventory.keys()) != 0:
             self.drop_items_section(item_database)
 
+    def buy_item(self, item):
+        """Character interaction to buy item.
+        
+        Args:
+            item: The item object stored in the item database.
+            
+        Returns:
+            None"""
+        if self.gold - item.value >= 0:
+            print("Not enough gold!")
+        elif self.full_inventory == True:
+            print("Inventory is full!")
+        else:
+            self.pickup_item(item)
+            self.gold -= item.value
+            print(f"{item.item_name} purchased.")
+            print(f"Gold: {self.gold}")
+
+    def sell_item(self, item):
+        """Character interaction to sell item.
+        
+        Args:
+            item: The item object stored in the item database.
+            
+        Returns:
+            None"""
+         
+        if item.item_name not in self.inventory.keys():
+            print("Invalid item typed.")
+        else:
+            self.drop_item(item)
+            self.gold += item.value
+            print(f"{item.item_name} sold.")
+            print(f"Gold: {self.gold}")
+    
+
     # ------------- Using items ------------- #
                 
     def get_available_tools(self, sit_type):

@@ -2,7 +2,7 @@ import pickle
 import os
 
 from src.text_manipulation.text_manipulation import *
-from src.data.game_data import game_data, item_utils
+from src.data.game_data import game_data, ItemDatabase
 
 
 # Connects the data to the player and handles input.
@@ -338,7 +338,7 @@ class Engine:
         Returns:
             A tuple of the string names of the equipped items."""
 
-        return_item_names = item_utils["return_item_names"]
+        return_item_names = ItemDatabase.return_item_names
 
         helmet_vals = self.player.equipped_helmet
         helmet = return_item_names(helmet_vals)
