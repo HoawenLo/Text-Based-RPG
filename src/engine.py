@@ -1,8 +1,8 @@
 import pickle
 import os
 
-from src.text_manipulation.text_manipulation import *
-from src.data.game_data import game_data, ItemDatabase
+from .text_manipulation.text_manipulation import *
+from .data.game_data import GameData
 
 
 # Connects the data to the player and handles input.
@@ -14,7 +14,7 @@ class Engine:
         # ----------------------- Intialisation variables ----------------------- #
 
         self.player = None
-        self.game_data = game_data
+        self.game_data = GameData(self.player).game_data
 
         # ----------------------- Title and loading text ----------------------- #
 
@@ -111,9 +111,7 @@ class Engine:
         # to be updated
         
         self.player.current_area = "Caravan"
-        self.player.area_data = self.player.current_location.all_areas[self.player.current_area]
-
-        
+        self.player.area_data = self.player.current_location[self.player.current_area]
 
         welcome_text = "You arrive in Windengard, welcomed by an old man."
         character_crawl(welcome_text)
@@ -244,9 +242,9 @@ class Engine:
                 print("Type 1, 2 or 3\n")
 
             if response == "1":
-                self.player.run_inventory_interaction(game_data["items"])
+                self.player.run_inventory_interaction(self.game_data["items"])
             elif response == "2":
-                self.player.run_equip_interaction(game_data["items"])
+                self.player.run_equip_interaction(self.game_data["items"])
             elif response == "3":
                 break
             
@@ -338,7 +336,7 @@ class Engine:
         Returns:
             A tuple of the string names of the equipped items."""
 
-        return_item_names = ItemDatabase.return_item_names
+        return_item_names = self.game_data["items"](self.player).return_item_names
 
         helmet_vals = self.player.equipped_helmet
         helmet = return_item_names(helmet_vals)

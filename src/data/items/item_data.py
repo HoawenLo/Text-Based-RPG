@@ -1,4 +1,4 @@
-from ....src.data.items.item_template import *
+from ..items.item_template import *
 
 
 # Contains all item data.
@@ -6,27 +6,11 @@ from ....src.data.items.item_template import *
 # ------------------------ item methods ------------------------ #
 class ItemDatabase:
 
-    def __init__(self, character_reference, item_database):
+    def __init__(self, character_reference):
 
         self.character_reference = character_reference
-        self.item_database = item_database
 
-# ------------------------ item special functions ------------------------ #
-
-    def restore_health_apple(self):
-        """Restore health by 3.
-        
-        Args:
-            None
-            
-        Returns:
-            None"""    
-        
-        self.character_reference += 3
-
-# ------------------------ items ------------------------ #
-
-    def item_database(self):
+        # --------------- Items --------------- # 
 
         simple_copper_sword = BasicWeapon(
             item_name="Simple Copper Sword",
@@ -34,7 +18,8 @@ class ItemDatabase:
             item_stack=False,
             value=10,
             attack=4,
-            defence=0
+            defence=0,
+            health=0
         )
 
         simple_copper_helmet = BasicArmour(
@@ -84,6 +69,19 @@ class ItemDatabase:
         "brass ring":brass_ring,
         "apple": apple
     }
+# ------------------------ item special functions ------------------------ #
+
+    def restore_health_apple(self):
+        """Restore health by 3.
+        
+        Args:
+            None
+            
+        Returns:
+            None"""    
+        
+        self.character_reference += 3
+
 # ------------------------ item utility methods ------------------------ #
 
     def return_item_names(self, item_val):

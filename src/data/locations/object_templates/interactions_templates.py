@@ -26,6 +26,7 @@ class Quest(Interactions):
         if self.quest_reference.quest_active:
             self.activated = True
 
+
 class Combat(Interactions):
 
     def __init__(self, player_reference):

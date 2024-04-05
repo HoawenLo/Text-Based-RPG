@@ -30,12 +30,12 @@ class Quest(Npc):
 class SellTrader(Npc):
     """Trader npcs provide products and services to the player. They will with funnel into the locations module, 
     which will allow interactions with items in the data module."""
-    def __init__(self, dialogue, name, products, item_data):
+    def __init__(self, dialogue, name, products, item_database):
         super().__init__(dialogue, name)
 
         self.npc_type = "trader"
         self.products = products
-        self.item_database = item_data.item_database
+        self.item_database = item_database
         self.character_reference = None
 
     def show_products(self):
@@ -657,10 +657,6 @@ class Dialogue:
         Returns:
             None"""
         
-        print("running special function", self.special_functions, "node_input_value", node_input_value)
-
-        print(self.special_functions)
-
         special_function = self.special_functions[node_input_value]
         
         pulled_function = special_function(node_input_value)

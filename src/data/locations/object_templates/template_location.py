@@ -34,7 +34,7 @@ class Location():
         if len(interactions) > 5:
             raise ValueError(f"Length of interactions is greater than 5. Length of interactions is {len(interactions)}.")
 
-        interactions_full = {"Available interactions: ":""}
+        interactions_full = {"Available interactions:":""}
         interactions_full.update(interactions)
 
         area_data = {"areas":move_areas,
