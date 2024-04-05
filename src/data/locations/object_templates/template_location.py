@@ -14,9 +14,9 @@ class Location():
             area_name: The name of area as a string.
             move_areas: A dictionary of the areas that can be moved to.
             Dictionary is of format {num:area_name, ...}
-            quests: A list of the quests available in the area.
-            interactions: A list of the interactions available in the area.
-            npcs: A list of the npcs available in the area.
+            quests: A dictionary of the quests available in the area.
+            interactions: A dictionary of the interactions available in the area.
+            npcs: A dictionary of the npcs available in the area.
             
         Returns:
             None"""

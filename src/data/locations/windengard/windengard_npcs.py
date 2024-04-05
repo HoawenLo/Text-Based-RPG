@@ -1,66 +1,80 @@
 from ..object_templates.npc_templates import *
 
-class WindergardNpcs:
+class WindergardNPCs:
 
-    def __init__(self):
-
-        
-
+    def __init__(self, item_database):
         self.npc_database = {}
+        self.item_database = item_database
 
-    def dialogue_packages(self):
+    def dialogue_packages(self, npc_reference):
         """Holds the dialogue packages.
-        
+
+        Args:
+            npc_reference: The npc reference refers to the dialogue package to fetch.
+
+        Returns:
+            A dialogue package which is a function containing the logic of the dialogue
+            to run.
         """
 
 
-def trader_dialogue_package(*args):
-    """Dialogue package for trader.
-    
-    Args:
-        *args: Accepts any number of arguments as 
-        run_dialogue method for NPC varies.
+        def blacksmith_dialogue_package(*args):
+            """Dialogue package for blacksmith.
+            
+            Args:
+                *args: Accepts any number of arguments as 
+                run_dialogue method for NPC varies.
 
-    Returns:
-        None
-    """
+            Returns:
+                None
+            """
 
-    trader_dialogue = Dialogue()
+            blacksmith_dialogue = Dialogue()
 
-    if len(*args) == 3:
-        trader_dialogue.set_special_functions(*args[1])
-    if len(*args) == 5:
-        trader_dialogue.set_special_functions(*args[1], *args[2])
+            if len(list(args)) == 4:
+                special_functions = {"buy_items":args[1]}
+                blacksmith_dialogue.set_special_functions(special_functions)
 
-    # Dialogue below
+            # Dialogue below
+                
+            a = ("Blacksmith: Hello guv how can I help you?", blacksmith_dialogue.dialogue_npc)
+            b = ((("Nothing.", blacksmith_dialogue.end_dialogue), ("buy_items", blacksmith_dialogue.run_special_function), blacksmith_dialogue.show_responses))
+            c = ("Nothing.", blacksmith_dialogue.end_dialogue)
+            d = ("buy_items", blacksmith_dialogue.run_special_function)
+
+            blacksmith_dialogue.initialise_node(a)
+            blacksmith_dialogue.add_dialogue_node(b)
+            blacksmith_dialogue.add_dialogue_node(c)
+            blacksmith_dialogue.add_dialogue_node(d)
+
+            blacksmith_dialogue.add_dialogue_edge(a, b)
+            blacksmith_dialogue.add_dialogue_edge(b, c)
+            blacksmith_dialogue.add_dialogue_edge(b, d)
+
+            blacksmith_dialogue.run_dialogue()
+
+        if npc_reference == "blacksmith":
+            return blacksmith_dialogue_package
         
-    a = ("Trader: Hello", trader_dialogue.dialogue_npc)
-    b = ("Hello", trader_dialogue.dialogue_player)
-    c = ("NPC: How can I help?", trader_dialogue.dialogue_npc)
-    d = ((("end", trader_dialogue.end_dialogue), ("show items", trader_dialogue.run_special_function), trader_dialogue.show_responses))
-    e = ("end", trader_dialogue.end_dialogue)
-    f = ("show items", trader_dialogue.run_special_function)
-    g = ("chat", trader_dialogue.dialogue_npc)
+    def npc_packages(self, npc_reference):
+        """Holds the npc packages.
 
-    trader_dialogue.initialise_node(a)
-    trader_dialogue.add_dialogue_node(b)
-    trader_dialogue.add_dialogue_node(c)
-    trader_dialogue.add_dialogue_node(d)
-    trader_dialogue.add_dialogue_node(e)
-    trader_dialogue.add_dialogue_node(f)
-    trader_dialogue.add_dialogue_node(g)
+        Args:
+            npc_reference: The npc reference refers to the npc packages to fetch.
 
-    trader_dialogue.add_dialogue_edge(a, b)
-    trader_dialogue.add_dialogue_edge(b, c)
-    trader_dialogue.add_dialogue_edge(c, d)
-    trader_dialogue.add_dialogue_edge(d, e)
-    trader_dialogue.add_dialogue_edge(d, f)
-    trader_dialogue.add_dialogue_edge(d, g)
-    trader_dialogue.add_dialogue_edge(f, e)
-    trader_dialogue.add_dialogue_edge(g, e)
+        Returns:
+            A npc package which is an object.
+        """
 
-    trader_dialogue.run_dialogue()
-
-trader_dialogue_package()
+        blacksmith = SellTrader(self.dialogue_packages(npc_reference="blacksmith"), 
+                                "Blacksmith", 
+                                products={"1":"Simple Copper Sword",
+                                          "2":"Simple Copper Chestplate",
+                                          "3":"Simple Copper Helmet",
+                                          "4":"Brass Ring"}, 
+                                item_database=self.item_database)
+        
+        if npc_reference == "blacksmith":
+            return blacksmith
         
     

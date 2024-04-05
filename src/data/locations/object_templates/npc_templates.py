@@ -55,13 +55,9 @@ class SellTrader(Npc):
         """Initiate a buy method for the character.
         
         Args:
-            item_input: The item input as a string."""
+            item_input: The item input as an object."""
         
-        all_items = list(self.item_database.keys())
-
-        if item_input in all_items:
-            fetched_item = self.item_database[item_input]
-            self.character_reference.buy_item(fetched_item)
+        self.character_reference.buy_item(item_input)
 
     def run_buy_response(self):
         """Run a input to get the player buy response.
@@ -153,13 +149,9 @@ class SellTrader(Npc):
         """Initiate a sell method for the character.
         
         Args:
-            item_input: The item input as a string."""
+            item_input: The item input as an object."""
         
-        all_items = list(self.item_database.keys())
-
-        if item_input in all_items:
-            fetched_item = self.item_database[item_input]
-            self.character_reference.sell_item(fetched_item)
+        self.character_reference.sell_item(item_input)
 
     def trader_methods(self, method="buy_items"):
         """Holds all trader methods.
