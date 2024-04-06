@@ -11,8 +11,10 @@ class Windergard:
 
         location = Location()
 
+        windergard_npcs = WindergardNPCs(item_database, player_reference)
+
         npcs = {
-            "blacksmith":WindergardNPCs(item_database).npc_packages(npc_reference="blacksmith"),
+            "blacksmith":windergard_npcs.npc_packages(npc_reference="blacksmith"),
         }
 
         windengard_interactions = WindengardInteractions(player_reference, npc_database=npcs)

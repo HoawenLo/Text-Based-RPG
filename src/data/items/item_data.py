@@ -26,19 +26,19 @@ class ItemDatabase:
             item_name="Simple Copper Helmet",
             item_description="A simple copper helmet for basic combat needs.",
             item_stack=False,
-            value=5,
+            value=10,
             attack=0,
             defence=2,
             health=0
         )
 
         simple_copper_chestplate = BasicArmour(
-            item_name="Simple Copper Helmet",
+            item_name="Simple Copper Chestplate",
             item_description="A simple copper helmet for basic combat needs.",
             item_stack=False,
-            value=5,
+            value=20,
             attack=0,
-            defence=2,
+            defence=4,
             health=0
         )
 
@@ -63,11 +63,11 @@ class ItemDatabase:
 
 
         self.item_database = {
-        "simple copper sword":simple_copper_sword,
-        "simple copper chestplate":simple_copper_chestplate,
-        "simple copper helmet":simple_copper_helmet,
-        "brass ring":brass_ring,
-        "apple": apple
+        "Simple copper sword":simple_copper_sword,
+        "Simple copper chestplate":simple_copper_chestplate,
+        "Simple copper helmet":simple_copper_helmet,
+        "Brass ring":brass_ring,
+        "Apple": apple
     }
 # ------------------------ item special functions ------------------------ #
 

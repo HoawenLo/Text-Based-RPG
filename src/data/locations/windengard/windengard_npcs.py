@@ -2,9 +2,10 @@ from ..object_templates.npc_templates import *
 
 class WindergardNPCs:
 
-    def __init__(self, item_database):
+    def __init__(self, item_database, player_reference):
         self.npc_database = {}
         self.item_database = item_database
+        self.player_reference = player_reference
 
     def dialogue_packages(self, npc_reference):
         """Holds the dialogue packages.
@@ -31,6 +32,7 @@ class WindergardNPCs:
 
             blacksmith_dialogue = Dialogue()
 
+
             if len(list(args)) == 4:
                 special_functions = {"buy_items":args[1]}
                 blacksmith_dialogue.set_special_functions(special_functions)
@@ -50,6 +52,7 @@ class WindergardNPCs:
             blacksmith_dialogue.add_dialogue_edge(a, b)
             blacksmith_dialogue.add_dialogue_edge(b, c)
             blacksmith_dialogue.add_dialogue_edge(b, d)
+            blacksmith_dialogue.add_dialogue_edge(d, c)
 
             blacksmith_dialogue.run_dialogue()
 
@@ -68,11 +71,12 @@ class WindergardNPCs:
 
         blacksmith = SellTrader(self.dialogue_packages(npc_reference="blacksmith"), 
                                 "Blacksmith", 
-                                products={"1":"Simple Copper Sword",
-                                          "2":"Simple Copper Chestplate",
-                                          "3":"Simple Copper Helmet",
-                                          "4":"Brass Ring"}, 
-                                item_database=self.item_database)
+                                products={"1":"Simple copper sword",
+                                          "2":"Simple copper chestplate",
+                                          "3":"Simple copper helmet",
+                                          "4":"Brass ring"}, 
+                                item_database=self.item_database,
+                                player_reference=self.player_reference)
         
         if npc_reference == "blacksmith":
             return blacksmith

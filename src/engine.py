@@ -13,8 +13,6 @@ class Engine:
 
         # ----------------------- Intialisation variables ----------------------- #
 
-        self.player = None
-        self.game_data = GameData(self.player).game_data
 
         # ----------------------- Title and loading text ----------------------- #
 
@@ -70,8 +68,8 @@ class Engine:
         """Runs the game engine."""
 
         while True:
-            print("Select option -- 1 play -- 2 lore -- 3 exit -- ")
-            response = input("Response: ")
+            print("Select option -- 1 Play -- 2 Lore -- 3 Exit -- ")
+            response = input("Response (type number): ")
 
             if response not in self.main_menu_responses:
                 print("Type 1, 2 or 3.")
@@ -98,19 +96,22 @@ class Engine:
     def set_player_settings(self):
         """Initialise the new start state for the player."""
 
-        player = self.game_data["player"]
+        initial_state = GameData(None).game_data
+
+        player = initial_state["player"]
 
         self.player = player(base_health=15, 
                              base_attack=1, 
                              base_defence=0, 
                              level=1, 
-                             current_location=self.game_data["locations"]["windengard"])
-        
-        
+                             current_location=None)
 
-        # to be updated
+        # Initialise game_data
         
+        self.game_data = GameData(self.player).game_data
+
         self.player.current_area = "Caravan"
+        self.player.current_location = self.game_data["locations"]["windengard"]
         self.player.area_data = self.player.current_location[self.player.current_area]
 
         welcome_text = "You arrive in Windengard, welcomed by an old man."
@@ -214,7 +215,7 @@ class Engine:
 
     def fetch_response(self):
         """Fetch the player response."""
-        player_response = input("Response: ")
+        player_response = input("Response (type number): ")
         return player_response
 
     def check_quests(self):

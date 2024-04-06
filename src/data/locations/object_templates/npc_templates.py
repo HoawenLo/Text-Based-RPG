@@ -30,13 +30,13 @@ class Quest(Npc):
 class SellTrader(Npc):
     """Trader npcs provide products and services to the player. They will with funnel into the locations module, 
     which will allow interactions with items in the data module."""
-    def __init__(self, dialogue, name, products, item_database):
+    def __init__(self, dialogue, name, products, item_database, player_reference):
         super().__init__(dialogue, name)
 
         self.npc_type = "trader"
         self.products = products
         self.item_database = item_database
-        self.character_reference = None
+        self.player_reference = player_reference
 
     def show_products(self):
         """Display the products available for sale.
@@ -56,8 +56,8 @@ class SellTrader(Npc):
         
         Args:
             item_input: The item input as an object."""
-        
-        self.character_reference.buy_item(item_input)
+        self.player_reference.buy_item(item_input)
+
 
     def run_buy_response(self):
         """Run a input to get the player buy response.
@@ -69,7 +69,7 @@ class SellTrader(Npc):
             A string, the response of the player which corresponds
             to an item."""
 
-        response = input("State the number of the item you would like to purchase or type 0 to exit.\n")
+        response = input("State the number of the item you would like to purchase or type 0 to exit.\nResponse (type number):")
 
         return response
 
@@ -99,7 +99,7 @@ class SellTrader(Npc):
             continue interaction."""
         
         while True:
-            response = input("Anything else: 1 yes / 2 no\n")
+            response = input("Anything else: 1 Yes / 2 No\nResponse: ")
 
             if response == "1" or response == "2":
                 break
@@ -107,9 +107,9 @@ class SellTrader(Npc):
             print("Invalid response, type 1 or 2.")
 
         if response == "1":
-            return True
-        elif response == "2":
             return False
+        elif response == "2":
+            return True
 
 
     def display_sellable_items(self, player_inventory_items):
@@ -164,8 +164,8 @@ class SellTrader(Npc):
         Returns:
             The corresponding trading method."""
         
-        if method != "buy_items" or method != "sell_items":
-            raise ValueError(f"Invalid method input. Must be buy_items or sell_items, instead input is {method}.")
+        # if method != "buy_items" or method != "sell_items":
+            # raise ValueError(f"Invalid method input. Must be buy_items or sell_items, instead input is {method}.")
         
         def run_purchase_sequence():
             """Run a buy sequence. Buy sequence consists of a while loop with
@@ -242,7 +242,7 @@ class SellTrader(Npc):
 
     def run_trading_dialogue(self, dialogue_active):
         """Run trading dialogue. This is a special type of dialogue which allows buy/sell interactions with the player."""
-        self.dialogue_text(dialogue_active, self.trader_methods, self.item_database, self.character_reference)
+        self.dialogue_text(dialogue_active, self.trader_methods, self.item_database, self.player_reference)
 
 class Combat(Npc):
 
@@ -497,7 +497,6 @@ class Dialogue:
         current_node_pos will be set to None to end the recursive cycle."""
         if self.current_node_pos != None:
             self.return_next_node()
-            input("")
             self.run_node()
 
     def return_next_node(self):
@@ -537,8 +536,6 @@ class Dialogue:
         current_node_input = self.current_node_pos[0]
         current_node_function = self.current_node_pos[1]
 
-        print("current node_function", current_node_function, "current node input", current_node_input)
-
         if current_node_function == self.run_special_function:
             current_node_function(current_node_input)
         elif current_node_function == self.end_dialogue:
@@ -559,7 +556,6 @@ class Dialogue:
             
         Returns:
             None"""
-        print(f"run_response_node current_node_pos: {self.current_node_pos[1]}")
 
         # pull out responses and show them
         current_node_input = self.current_node_pos[0]
@@ -792,7 +788,10 @@ if __name__ == "__main__":
         trader_dialogue = Dialogue()
 
         if len(list(args)) == 4:
-            special_functions = {"show_products":args[1]}
+
+            
+
+            special_functions = {"buy_items":args[1]}
             trader_dialogue.set_special_functions(special_functions)
 
         # Dialogue below
@@ -800,9 +799,9 @@ if __name__ == "__main__":
         a = ("Trader: Hello", trader_dialogue.dialogue_npc)
         b = ("Hello", trader_dialogue.dialogue_player)
         c = ("NPC: How can I help?", trader_dialogue.dialogue_npc)
-        d = ((("end", trader_dialogue.end_dialogue), ("show_products", trader_dialogue.run_special_function), trader_dialogue.show_responses))
+        d = ((("end", trader_dialogue.end_dialogue), ("buy_items", trader_dialogue.run_special_function), trader_dialogue.show_responses))
         e = ("end", trader_dialogue.end_dialogue)
-        f = ("show_products", trader_dialogue.run_special_function)
+        f = ("buy_items", trader_dialogue.run_special_function)
         g = ("chat", trader_dialogue.dialogue_npc)
         h = ("buy_items")
 
@@ -836,10 +835,10 @@ if __name__ == "__main__":
     test_two = test_items("test two", 3, "desc 2")
 
 
-    products = {"test":test, "test2":test_two}
+    products = {"1":"test", "2":"test2"}
 
 
-    test_npc = SellTrader(trader_dialogue_package, "test_npc", products=products, item_database=None)
+    test_npc = SellTrader(trader_dialogue_package, "test_npc", products=products, item_database={"test":test, "test2":test_two})
     test_npc.run_trading_dialogue(dialogue_active=True)
 
         

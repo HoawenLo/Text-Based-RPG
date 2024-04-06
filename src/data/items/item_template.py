@@ -62,6 +62,7 @@ class BasicWeapon(Item):
         self.attack = attack
         self.defence = defence
         self.health = health
+        self.item_type = "weapon"
 
 class SpecialWeapon(BasicWeapon, EffectItem):
     """Encompasses special weapons - weapons with effects."""
@@ -77,6 +78,7 @@ class BasicArmour(Item):
         self.attack = attack
         self.defence = defence
         self.health = health
+        self.armour = "armour"
 
 class SpecialArmour(BasicWeapon, EffectItem):
     """Encompasses special armour pieces - armour pieces with effects."""

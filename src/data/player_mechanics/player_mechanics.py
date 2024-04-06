@@ -202,7 +202,7 @@ class Player:
             
         Returns:
             None"""
-        if self.gold - item.value >= 0:
+        if self.gold - item.value <= 0:
             print("Not enough gold!")
         elif self.full_inventory == True:
             print("Inventory is full!")
@@ -346,7 +346,7 @@ class Player:
         if len(self.inventory.keys()) == 0:
             print("Inventory empty.")
         else:
-            equippable_items = ["helmet", "chestplate", "weapon", "ring"]
+            equippable_items = ["weapon", "armour"]
 
             print("Equipable:")
             for item in self.inventory.keys():
@@ -518,7 +518,7 @@ class Player:
             None"""
         
         while True:
-            equip_command = input("-- 1 equip items -- 2 unequip items -- 3 exit --\nResponse: ")
+            equip_command = input("-- 1 Equip items -- 2 Unequip items -- 3 Exit --\nResponse: ")
             if equip_command == "1":
                 self.equip_logic(item_database)
             elif equip_command == "2":
