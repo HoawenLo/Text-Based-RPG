@@ -68,8 +68,8 @@ class Engine:
         """Runs the game engine."""
 
         while True:
-            print("Select option -- 1 Play -- 2 Lore -- 3 Exit -- ")
-            response = input("Response (type number): ")
+            print("Select option (type number) -- 1 Play -- 2 Lore -- 3 Exit -- ")
+            response = input("Response: ")
 
             if response not in self.main_menu_responses:
                 print("Type 1, 2 or 3.")
@@ -114,8 +114,12 @@ class Engine:
         self.player.current_location = self.game_data["locations"]["windengard"]
         self.player.area_data = self.player.current_location[self.player.current_area]
 
-        welcome_text = "You arrive in Windengard, welcomed by an old man."
-        character_crawl(welcome_text)
+        self.player.pickup_item(self.game_data["items"]["Simple copper sword"])
+        self.player.pickup_item(self.game_data["items"]["Simple copper helmet"])
+        self.player.pickup_item(self.game_data["items"]["Simple copper chestplate"])
+
+        # welcome_text = "You arrive in Windengard, welcomed by an old man."
+        # character_crawl(welcome_text)
 
         # tutorial
     
@@ -215,7 +219,7 @@ class Engine:
 
     def fetch_response(self):
         """Fetch the player response."""
-        player_response = input("Response (type number): ")
+        player_response = input("Response: ")
         return player_response
 
     def check_quests(self):
@@ -245,7 +249,7 @@ class Engine:
             if response == "1":
                 self.player.run_inventory_interaction(self.game_data["items"])
             elif response == "2":
-                self.player.run_equip_interaction(self.game_data["items"])
+                self.player.run_equip_interaction()
             elif response == "3":
                 break
             
@@ -337,19 +341,30 @@ class Engine:
         Returns:
             A tuple of the string names of the equipped items."""
 
-        return_item_names = self.game_data["items"](self.player).return_item_names
-
         helmet_vals = self.player.equipped_helmet
-        helmet = return_item_names(helmet_vals)
-
         chestplate_vals = self.player.equipped_chestplate
-        chestplate = return_item_names(chestplate_vals)
-
         weapon_vals = self.player.equipped_weapon
-        weapon = return_item_names(weapon_vals)
-
         ring_vals = self.player.equipped_ring
-        ring = return_item_names(ring_vals)
+        
+        if helmet_vals != None:
+            helmet = self.game_data["items"][helmet_vals].item_name
+        else:
+            helmet = None
+
+        if chestplate_vals != None:
+            chestplate = self.game_data["items"][chestplate_vals].item_name
+        else:
+            chestplate = None
+
+        if weapon_vals != None:
+            weapon = self.game_data["items"][weapon_vals].item_name
+        else:
+            weapon = None
+
+        if ring_vals != None:
+            ring = self.game_data["items"][ring_vals].item_name
+        else:
+            ring = None
         
         equipped_items = (helmet, chestplate, weapon, ring)
         return equipped_items

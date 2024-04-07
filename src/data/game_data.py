@@ -8,7 +8,7 @@ class GameData:
 
         location_database = LocationDatabase(ItemDatabase(player_reference).item_database, player_reference).locations_database
 
-        self.game_data = {"items":ItemDatabase, 
+        self.game_data = {"items":ItemDatabase(player_reference).item_database, 
                           "locations":location_database, 
                           "player":Player}
 

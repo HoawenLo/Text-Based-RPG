@@ -165,11 +165,13 @@ class Player:
         Returns:
             None"""
 
-        drop_items = input("Would you like to drop items?\n -- 1 yes -- 2 no -- \nResponse: ")
+        drop_items = input("Would you like to drop items?\n -- 1 Yes -- 2 No -- \nResponse: ")
         while True:
             if drop_items == "1":
-                drop_item_name = input("Type item name: ")
-                if drop_item_name not in list(item_database.keys()):
+                drop_item_name = input("Type item name or exit: ")
+                if drop_item_name == "exit":
+                    break
+                elif drop_item_name not in list(item_database.keys()):
                     print("Item does not exist. Perhaps you typed it incorrectly?")
                 else:
                     self.drop_item(item_database[drop_item_name])
@@ -346,13 +348,17 @@ class Player:
         if len(self.inventory.keys()) == 0:
             print("Inventory empty.")
         else:
-            equippable_items = ["weapon", "armour"]
+            equipable_item_types = ["Helmet", "Chestplate", "Weapon", "Ring"]
+
+            print([item for item in self.inventory.keys()])
+
+            equipable_items = {str(i + 1) : item for i, item in enumerate(self.inventory.keys()) if item.item_type in equipable_item_types}
 
             print("Equipable:")
-            for item in self.inventory.keys():
+            for i, item in equipable_items.items():
+                print(f"{i} {item.item_name} : {item.item_type} : {item.item_description}")
 
-                if item.item_type in equippable_items:
-                    print(f"{item.item_name} : {item.item_type}")
+            return equipable_items
 
     def equip_item(self, item):
         """Equip item adding passive effects and stats.
@@ -362,27 +368,41 @@ class Player:
         
         if item not in self.inventory.keys():
             print("Item not in inventory")
-        else:
-            item_type = item.item_type
+            return
+        
+        item_type = item.item_type
 
-            if item_type == "helmet":
-                equipped_item = self.equipped_helmet
-            elif item_type == "chestplate":
-                equipped_item = self.equipped_chestplate
-            elif item_type == "weapon":
-                equipped_item = self.equipped_weapon
-            elif item_type == "ring":
-                equipped_item = self.equipped_ring
+        if item_type == "Helmet":
+            equipped_item = self.equipped_helmet
+        elif item_type == "Chestplate":
+            equipped_item = self.equipped_chestplate
+        elif item_type == "Weapon":
+            equipped_item = self.equipped_weapon
+        elif item_type == "Ring":
+            equipped_item = self.equipped_ring
 
-            if equipped_item == None:
-                equipped_item = item
-                self.drop_item(item)
-                self.attack += self.equipped_item.attack
-                self.defence += self.equipped_item.defence
+        if equipped_item == None:
+            equipped_item = item
+            self.drop_item(item)
+            self.attack += item.attack
+            self.defence += item.defence
+        elif equipped_item != None:
+            print("Unequip item first!")
+            return
 
-                self.equipped_item.execute_passive_effect(self, equip_flag=True)
-            elif equipped_item != None:
-                print("Unequip item first!")
+        if item_type == "Helmet":
+            self.equipped_helmet = item
+        if item_type == "Chestplate":
+            self.equipped_chestplate = item
+        if item_type == "Weapon":
+            self.equipped_weapon = item
+        if item_type == "Ring":
+            self.equipped_ring = item
+
+    
+        if equipped_item.basic_item == False and equipped_item.execute_passive_effect != None:
+            equipped_item.execute_passive_effect(self, equip_flag=True)
+                    
         
     def unequip_item(self, item):
         """Unequip item from inventory, removing the passive effects applied
@@ -392,29 +412,38 @@ class Player:
             item: The equipped item to be removed."""
         if self.full_inventory == True:
             print("Inventory is full!")
+            return 
 
         item_type = item.item_type
 
-        if item_type == "helmet":
+        if item_type == "Helmet":
             equipped_item = self.equipped_helmet
-        elif item_type == "chestplate":
+        elif item_type == "Chestplate":
             equipped_item = self.equipped_chestplate
-        elif item_type == "weapon":
+        elif item_type == "Weapon":
             equipped_item = self.equipped_weapon
-        elif item_type == "ring":
+        elif item_type == "Ring":
             equipped_item = self.equipped_ring
 
         if equipped_item == None:
             print("Nothing equipped!")
-        elif equipped_item != None and self.full_inventory == False:
+            return
+        elif equipped_item != None:
             self.pickup_item(item)
+            self.attack -= equipped_item.attack
+            self.defence -= equipped_item.defence
 
-            self.attack -= self.equipped_helmet.attack
-            self.defence -= self.equipped_helmet.defence
-
-            equipped_item = None
-            
-            item.execute_passive_effect(self, equip_flag=False)
+        if item_type == "Helmet":
+            self.equipped_helmet = None
+        if item_type == "Chestplate":
+            self.equipped_chestplate = None
+        if item_type == "Weapon":
+            self.equipped_weapon = None
+        if item_type == "Ring":
+            self.equipped_ring = None
+        
+        if equipped_item.basic_item == False and equipped_item.execute_passive_effect != None:
+            equipped_item.execute_passive_effect(self, equip_flag=False)
 
     def view_equipped(self):
         """Show equipped items after equipping or unequipping.
@@ -466,7 +495,30 @@ class Player:
         else:
             return False
 
-    def equip_logic(self, item_database):
+    def return_equipped_items(self):
+        """Return a dictionary of equiped items with a string number
+        and their item name."""
+
+        equipped_items = [self.equipped_helmet, 
+                          self.equipped_chestplate, 
+                          self.equipped_weapon, 
+                          self.equipped_ring]
+
+        unequipable_items = {}
+
+        counter = 1
+
+        for item in equipped_items:
+
+            if item != None:
+                unequipable_items[str(counter)] = item
+                print(f"{str(counter)} : {item.item_name} : {item.item_type}")
+                
+                counter += 1
+
+        return unequipable_items
+
+    def equip_logic(self):
         """Run the equip logic.
         
         Args:
@@ -474,20 +526,24 @@ class Player:
             
         Returns:
             None"""
+        
         self.view_equipped()
         if len(self.inventory.keys()) != 0:
-            self.show_equippable()
-            equip_item_name = input("Type item name: ")
-            if equip_item_name not in list(item_database.keys()):
-                print("Item does not exist. Perhaps you typed it incorrectly?")
+            equipable_items = self.show_equippable()
+            equip_response = input("Type number or 0 to exit: ")
+            if equip_response == "0":
+                pass
+            elif equip_response not in list(equipable_items.keys()):
+                print("Invalid number.")
             else:
-                self.equip_item(item_database[equip_item_name])
+                item = equipable_items[equip_response]
+                self.equip_item(item)
                 self.view_equipped()
                 self.view_stats()
         else:
             print("Inventory empty.")
 
-    def unequip_logic(self, item_database):
+    def unequip_logic(self):
         """Run unequip logic.
         
         Args:
@@ -499,16 +555,21 @@ class Player:
         equipped_check = self.check_equipped_empty()
         if equipped_check:
             print("No items equipped.")
+            return
+        
+        equipped_items = self.return_equipped_items()
+        equip_response = input("Type number or 0 to exit: ")
+        if equip_response == "0":
+            return
+        elif equip_response not in list(equipped_items.keys()):
+            print("Invalid number typed.")
         else:
-            equip_item_name = input("Type item name: ")
-            if equip_item_name not in list(item_database.keys()):
-                print("Item does not exist. Perhaps you typed it incorrectly?")
-            else:                    
-                self.unequip_item(item_database[equip_item_name])
-                self.view_equipped()
-                self.view_stats()
+            item = equipped_items[equip_response]
+            self.unequip_item(item)
+            self.view_equipped()
+            self.view_stats()
 
-    def run_equip_interaction(self, item_database):
+    def run_equip_interaction(self):
         """Run equip items interaction. 
         
         Args:
@@ -520,9 +581,9 @@ class Player:
         while True:
             equip_command = input("-- 1 Equip items -- 2 Unequip items -- 3 Exit --\nResponse: ")
             if equip_command == "1":
-                self.equip_logic(item_database)
+                self.equip_logic()
             elif equip_command == "2":
-                self.unequip_logic(item_database)
+                self.unequip_logic()
             elif equip_command == "3":
                 break
             else:

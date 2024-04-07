@@ -69,7 +69,7 @@ class SellTrader(Npc):
             A string, the response of the player which corresponds
             to an item."""
 
-        response = input("State the number of the item you would like to purchase or type 0 to exit.\nResponse (type number):")
+        response = input("State the number of the item you would like to purchase or type 0 to exit.\nResponse: ")
 
         return response
 
@@ -153,7 +153,7 @@ class SellTrader(Npc):
         
         self.character_reference.sell_item(item_input)
 
-    def trader_methods(self, method="buy_items"):
+    def trader_methods(self, method="I would like to buy something."):
         """Holds all trader methods.
         
         Args:
@@ -235,9 +235,9 @@ class SellTrader(Npc):
                 if continue_interaction_resp:
                     break
 
-        if method == "buy_items":
+        if method == "I would like to buy something.":
             return run_purchase_sequence
-        elif method == "sell_items":
+        elif method == "I would like to sell something.":
             return run_sell_sequence
 
     def run_trading_dialogue(self, dialogue_active):

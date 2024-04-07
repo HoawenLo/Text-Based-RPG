@@ -34,15 +34,15 @@ class WindergardNPCs:
 
 
             if len(list(args)) == 4:
-                special_functions = {"buy_items":args[1]}
+                special_functions = {"I would like to buy something.":args[1]}
                 blacksmith_dialogue.set_special_functions(special_functions)
 
             # Dialogue below
                 
             a = ("Blacksmith: Hello guv how can I help you?", blacksmith_dialogue.dialogue_npc)
-            b = ((("Nothing.", blacksmith_dialogue.end_dialogue), ("buy_items", blacksmith_dialogue.run_special_function), blacksmith_dialogue.show_responses))
+            b = ((("Nothing.", blacksmith_dialogue.end_dialogue), ("I would like to buy something.", blacksmith_dialogue.run_special_function), blacksmith_dialogue.show_responses))
             c = ("Nothing.", blacksmith_dialogue.end_dialogue)
-            d = ("buy_items", blacksmith_dialogue.run_special_function)
+            d = ("I would like to buy something.", blacksmith_dialogue.run_special_function)
 
             blacksmith_dialogue.initialise_node(a)
             blacksmith_dialogue.add_dialogue_node(b)
