@@ -1,4 +1,4 @@
-import pickle
+import dill
 import os
 
 from .text_manipulation.text_manipulation import *
@@ -128,24 +128,27 @@ class Engine:
     def play(self):
         """Run the play option."""
         
-        if os.path.isfile("../saved_states/savegame.pkl"):
+        if os.path.isfile("saved_states/savegame.pkl"):
+
+            print("save_file detected")
+
             while True:
-                print("Start a new game? yes/no\n")
+                print("Start a new game? 1 Yes / 2 No")
                 response = self.fetch_response()
                 
-                if response != "yes" or response != "no":
-                    print("Invalid response. Type yes or no.")
+                if response == "1" or response == "2":
+                    break
+                else:
+                    print("Invalid response. Type 1 or 2.")
                 
-                if response == "yes":
-                    self.game_running = True
-                    self.load_new_game()
-                    self.run_game()
-                    break
-                elif response == "no":
-                    self.player = self.load_saved_game("../../saved_states/savegame.pkl")
-                    self.game_running = True
-                    self.run_game()
-                    break
+            if response == "1":
+                self.game_running = True
+                self.load_new_game()
+                self.run_game()
+            elif response == "2":
+                self.player = self.load_saved_game("saved_states/savegame.pkl")
+                self.game_running = True
+                self.run_game()
         else:
             self.load_new_game()
             self.game_running = True
@@ -168,14 +171,14 @@ class Engine:
         """"Save game with pickle."""
 
         with open(filename, "wb") as file:
-            pickle.dump(self.player, file)
+            dill.dump(self.player, file)
         print("Game saved!")
 
     def load_saved_game(self, filename):
         """Load a save pickle file."""
 
         with open(filename, "rb") as file:
-            loaded_game = pickle.load(file)
+            loaded_game = dill.load(file)
         return loaded_game
 
     # ------------------------------------- In game events cycle -------------------------------------
@@ -347,22 +350,22 @@ class Engine:
         ring_vals = self.player.equipped_ring
         
         if helmet_vals != None:
-            helmet = self.game_data["items"][helmet_vals].item_name
+            helmet = helmet_vals.item_name
         else:
             helmet = None
 
         if chestplate_vals != None:
-            chestplate = self.game_data["items"][chestplate_vals].item_name
+            chestplate = chestplate_vals.item_name
         else:
             chestplate = None
 
         if weapon_vals != None:
-            weapon = self.game_data["items"][weapon_vals].item_name
+            weapon = weapon_vals.item_name
         else:
             weapon = None
 
         if ring_vals != None:
-            ring = self.game_data["items"][ring_vals].item_name
+            ring = ring_vals.item_name
         else:
             ring = None
         

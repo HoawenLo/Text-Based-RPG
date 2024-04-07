@@ -38,6 +38,24 @@ class Windergard:
                             quests={}, 
                             interactions={"Talk to blacksmith":windengard_interactions.all_interactions["blacksmith_dialogue"]}, 
                             npcs={"Blacksmith":npcs["blacksmith"]})
+        
+        location.create_area(area_name="Training ground", 
+                            move_areas={"1":"Town Square", "2":"Cancel"}, 
+                            quests={}, 
+                            interactions={}, 
+                            npcs={})
+        
+        location.create_area(area_name="General store", 
+                            move_areas={"1":"Town Square", "2":"Cancel"}, 
+                            quests={}, 
+                            interactions={}, 
+                            npcs={})
+        
+        location.create_area(area_name="Inn", 
+                            move_areas={"1":"Town Square", "2":"Cancel"}, 
+                            quests={}, 
+                            interactions={}, 
+                            npcs={})
 
         self.all_areas = location.all_areas
 
