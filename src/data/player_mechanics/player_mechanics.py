@@ -100,8 +100,6 @@ class Player:
             pass
         else:
             self.current_area = available_areas[next_area_num]
-
-            print(self.current_location[available_areas[next_area_num]])
             self.area_data = self.current_location[available_areas[next_area_num]]
 
     # ------------- inventory ------------- #
