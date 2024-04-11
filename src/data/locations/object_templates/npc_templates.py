@@ -14,6 +14,34 @@ class Npc:
             self.dialogue_text(dialogue_active)
         else:
             return "Dialogue error."
+        
+    def word_crawl(self, text, line_length=60, text_speed=0.1):
+        """Used to crawl text. Crawls words instead of 
+        single characters.
+        
+        Args:
+            text: The sentence to be crawled.
+            line_length: Sets the length of the line.
+            If has a large body of text, will move 
+            onto next line if line length reached."""
+
+        words = text.split()
+        current_line = ""
+
+        for word in words:
+            if len(current_line) + len(word) + 1 <= line_length:
+                current_line += word + " "
+            else:
+                print(current_line)
+                current_line = word + " "
+                time.sleep(text_speed)
+
+            print(current_line, end="\r")
+            time.sleep(text_speed)
+
+        print(current_line)
+
+
 
 class Quest(Npc):
     """Quest npcs update their dialogue as a quest progresses. They will interact with the quest module in the higher level location file."""
@@ -99,7 +127,10 @@ class SellTrader(Npc):
             continue interaction."""
         
         while True:
-            response = input("Anything else: 1 Yes / 2 No\nResponse: ")
+            self.word_crawl(f"{self.name}: Anything else?")
+            print("1 Yes")
+            print("2 No")
+            response = input("Response: ")
 
             if response == "1" or response == "2":
                 break
@@ -151,9 +182,9 @@ class SellTrader(Npc):
         Args:
             item_input: The item input as an object."""
         
-        self.character_reference.sell_item(item_input)
+        self.player_reference.sell_item(item_input)
 
-    def trader_methods(self, method="I would like to buy something."):
+    def trader_methods(self, method="buy_items"):
         """Holds all trader methods.
         
         Args:
@@ -164,8 +195,8 @@ class SellTrader(Npc):
         Returns:
             The corresponding trading method."""
         
-        # if method != "buy_items" or method != "sell_items":
-            # raise ValueError(f"Invalid method input. Must be buy_items or sell_items, instead input is {method}.")
+        if method != "buy_items" or method != "sell_items":
+            raise ValueError(f"Invalid method input. Must be buy_items or sell_items, instead input is {method}.")
         
         def run_purchase_sequence():
             """Run a buy sequence. Buy sequence consists of a while loop with
@@ -183,6 +214,8 @@ class SellTrader(Npc):
             Returns:
                 None"""
             
+            self.word_crawl(f"{self.name}: This is what I have.")
+
             while True:
                 self.show_products()
                 response = self.run_buy_response()
@@ -199,6 +232,7 @@ class SellTrader(Npc):
                 continue_interaction_resp = self.continue_interaction()
 
                 if continue_interaction_resp:
+                    self.word_crawl(f"{self.name}: Okay goodbye.")
                     break
 
         def run_sell_sequence():
@@ -217,6 +251,8 @@ class SellTrader(Npc):
             Returns:
                 None"""
             
+            self.word_crawl(f"{self.name}: Show me what you have.")
+
             while True:
                 sellable_items = self.display_sellable_items()
                 response = self.run_sell_response()
@@ -233,11 +269,12 @@ class SellTrader(Npc):
                 continue_interaction_resp = self.continue_interaction()
 
                 if continue_interaction_resp:
+                    self.word_crawl(f"{self.name}: Okay goodbye.")
                     break
 
-        if method == "I would like to buy something.":
+        if method == "buy_items":
             return run_purchase_sequence
-        elif method == "I would like to sell something.":
+        elif method == "sell_items":
             return run_sell_sequence
 
     def run_trading_dialogue(self, dialogue_active):

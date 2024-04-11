@@ -118,13 +118,22 @@ class Dialogue:
         If next node is multi node, the length of node options will
         be greater than one. Run the return_multi_node method."""
         next_node_options = self.retrieve_node_options()
-
+        
+        # If an end dialogue node has been activated, the 
+        # current_node_pos will be set to None hence
+        # retrieve_node_options will return None.
+        # Simply return to end this function logic.
         if next_node_options == None:
             return
 
+        # If len next_node_options is 0, hence no further logic to be
+        # done simply set the current_node_pos to None to end the 
+        # run_node loop.
         if len(next_node_options) == 1:
             self.return_straight_node(next_node_options)
-        else:
+        elif len(next_node_options) == 0:
+            self.current_node_pos = None
+        elif len(next_node_options) > 1:
             self.return_multi_node(next_node_options)
 
     # ----------------- Retrieving node data ----------------- #
@@ -369,6 +378,7 @@ if __name__ == "__main__":
     b = ("I would like to buy something.", dialogue.dialogue_player)
     c = ("Nothing.", dialogue.end_dialogue)
     d = ("buy_items", dialogue.run_special_function)
+    e = ("End d")
     
 
     dialogue.initialise_node(a)
