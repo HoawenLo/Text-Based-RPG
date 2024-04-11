@@ -114,14 +114,16 @@ class Engine:
         self.player.current_location = self.game_data["locations"]["windengard"]
         self.player.area_data = self.player.current_location[self.player.current_area]
 
-        self.player.pickup_item(self.game_data["items"]["Simple copper sword"])
-        self.player.pickup_item(self.game_data["items"]["Simple copper helmet"])
-        self.player.pickup_item(self.game_data["items"]["Simple copper chestplate"])
 
         # welcome_text = "You arrive in Windengard, welcomed by an old man."
         # character_crawl(welcome_text)
 
-        # tutorial
+        # Activate tutorial
+
+
+        self.game_data["intro_quest"].windengard_reference.npcs["oldman_intro"].run_dialogue(dialogue_active=True)
+
+
     
     # ------------------------------------- Game state -------------------------------------
 
@@ -130,7 +132,7 @@ class Engine:
         
         if os.path.isfile("saved_states/savegame.pkl"):
 
-            print("save_file detected")
+            print("Save file detected.")
 
             while True:
                 print("Start a new game? 1 Yes / 2 No")
@@ -147,6 +149,7 @@ class Engine:
                 self.run_game()
             elif response == "2":
                 self.player = self.load_saved_game("saved_states/savegame.pkl")
+                self.game_data = GameData(self.player).game_data
                 self.game_running = True
                 self.run_game()
         else:

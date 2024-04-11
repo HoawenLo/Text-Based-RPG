@@ -66,17 +66,38 @@ class ItemDatabase:
             item_type="Consumable"
         )
 
+        health_potion = EffectItem(
+            item_name="Health potion",
+            item_description="Restores health by 10.",
+            item_stack=True,
+            value=15,
+            passive_effect=None,
+            active_effect=self.restore_health_potion,
+            item_type="Consumable"
+        )
+
+        simple_map = EffectItem(
+            item_name="Simple map",
+            item_description="Displays the major areas of the world.",
+            item_stack=False,
+            value=3,
+            passive_effect=None,
+            active_effect=self.simple_map,
+            item_type="Tool"
+        )
 
         self.item_database = {
         "Simple copper sword":simple_copper_sword,
         "Simple copper chestplate":simple_copper_chestplate,
         "Simple copper helmet":simple_copper_helmet,
         "Brass ring":brass_ring,
-        "Apple": apple
+        "Apple": apple,
+        "Health potion":health_potion,
+        "Simple map":simple_map
     }
 # ------------------------ item special functions ------------------------ #
 
-    def restore_health_apple(self):
+    def restore_health_apple(self, character_reference):
         """Restore health by 3.
         
         Args:
@@ -85,7 +106,29 @@ class ItemDatabase:
         Returns:
             None"""    
         
-        self.character_reference += 3
+        self.character_reference.current_health += 3
+        print("Health restored by 3 points")
+        if self.character_reference.current_health > self.character_reference.base_health:
+            self.character_reference.current_health = self.character_reference.base_health
+    
+    def restore_health_potion(self, character_reference):
+        """Restore health by 10.
+        
+        Args:
+            None
+            
+        Returns:
+            None"""    
+        
+        self.character_reference.current_health += 10
+        print("Health restored by 10 points")
+        if self.character_reference.current_health > self.character_reference.base_health:
+            self.character_reference.current_health = self.character_reference.base_health
+
+    def simple_map(self):
+        """Prints a simple map of the world."""
+
+        print("Windengard -- Dark Forest -- Astralhaven")
 
 # ------------------------ item utility methods ------------------------ #
 

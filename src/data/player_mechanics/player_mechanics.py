@@ -191,8 +191,30 @@ class Player:
             None"""
         
         self.view_inventory()
-        if len(self.inventory.keys()) != 0:
+        if len(self.inventory.keys()) == 0:
+            return
+        
+        print(" -- 1 Drop items -- 2 Use items -- 3 Exit -- ")
+        options = ["1", "2", "3"]
+
+        print("What would you like to do?")
+        
+
+        while True:
+            response = input("Response: ") 
+            if response not in options:
+                print("Type 1, 2 or 3.")
+                continue
+            break
+        
+        if response == "1":
             self.drop_items_section(item_database)
+        elif response == "2":
+            self.run_use_item_menu(item_database)
+        elif response == "3":
+            pass
+
+        
 
     def buy_item(self, item):
         """Character interaction to buy item.
@@ -221,7 +243,7 @@ class Player:
         Returns:
             None"""
          
-        if item.item_name not in self.inventory.keys():
+        if item not in self.inventory.keys():
             print("Invalid item typed.")
         else:
             self.drop_item(item)
@@ -245,15 +267,15 @@ class Player:
         all_items = list(self.inventory.keys())
 
         available_tools = []
-
         if sit_type == "combat":
-            tool_search_cond = (item.item_type == "consumable")
-        elif sit_type == "non combat":
-            tool_search_cond = (item.item_type == "tool" or item.item_type == "consumable")
+            for item in all_items:
+                if item.item_type == "Consumable":
+                    available_tools.append(item)
 
-        for item in all_items:
-            if tool_search_cond:
-                available_tools.append(item)
+        if sit_type == "non combat":
+            for item in all_items:
+                if item.item_type == "Tool" or item.item_type == "Consumable":
+                    available_tools.append(item)
         
         return available_tools
 
@@ -261,19 +283,32 @@ class Player:
         """Run the use item menu for combat or non combat
         situations."""
 
-        available_tools = self.get_available_tools()
+        available_tools = self.get_available_tools(sit_type="non combat")
 
         if len(available_tools) == 0:
-            print("No available tools.")
+            print("No available tools or consumables.")
         else:
             print("Available tools:")
-                                
-            for tool in available_tools:
-                print(f"{tool.item_name}: {tool.item_description}")
-            tool_response = input("Input name of tool to use: ")
-            tool_fetch = item_database[tool_response]
 
-            self.use_item(tool_fetch)
+            tools_with_nums = {str(i + 1): tool for i, tool in enumerate(available_tools)}
+
+            for i, tool in enumerate(available_tools):
+                print(f"{i + 1} {tool.item_name}: {tool.item_description}")
+
+            while True:
+                tool_response = input("Input number or 0 to exit: ")
+
+                if tool_response == "0":
+                    return
+
+                if tool_response in tools_with_nums.keys():
+                    break
+                
+                print("Invalid number")
+            
+            tool = tools_with_nums[tool_response]
+
+            self.use_item(tool)
 
     def use_item(self, item):
         """Use item in combat or non combat situation.
@@ -283,9 +318,9 @@ class Player:
         if item not in self.inventory:
             print("You selected an invalid item.")
         else:
-            item.execute_active_effect(character=self)
+            item.execute_active_effect(player=self)
 
-            if item.item_type == "consumable":
+            if item.item_type == "Consumable":
                 self.drop_item(item)
 
     # ------------- Stored items ------------- #
@@ -347,8 +382,6 @@ class Player:
             print("Inventory empty.")
         else:
             equipable_item_types = ["Helmet", "Chestplate", "Weapon", "Ring"]
-
-            print([item for item in self.inventory.keys()])
 
             equipable_items = {str(i + 1) : item for i, item in enumerate(self.inventory.keys()) if item.item_type in equipable_item_types}
 
@@ -595,26 +628,48 @@ class Player:
         if self.completed_quest_list == {}:
             print("Empty.")
 
-        for quest_name, quest_data in self.completed_quest_list.items():
-            quest_reward = quest_data
-            print(f"{quest_name} : {quest_reward}")
+        for quest_data, quest_description in self.completed_quest_list.items():
+            print(f"{quest_data.quest_name} : {quest_description}")
 
     def view_ongoing_quests(self):
         """View ongoing quests and descriptions."""
         if self.ongoing_quest_list == {}:
             print("Empty.")
 
-        for quest_name, quest_data in self.ongoing_quest_list.items():
-            quest_instruction = quest_data
-            print(f"{quest_name} : {quest_instruction}")
+        for quest_data, quest_instruction in self.ongoing_quest_list.items():
+            print(f"{quest_data.quest_name} : {quest_instruction}")
 
     def add_quest(self, quest_reference):
         # make sure not in completed
-        fetched_quest = self.quest_database[quest_reference]
-        fetched_quest.character = self
-        fetched_quest.activate_quest = True
-        fetched_quest.run_quest()
-        self.incompleted_quest_list[quest_reference] = fetched_quest.current_goal
+        self.ongoing_quest_list[quest_reference] = quest_reference.current_goal
+
+    # ------------- Combat ------------- #
+
+    def gain_exp(self, exp_amount):
+        """Increase exp amount.
+        
+        Args:
+            exp_amount: The exp amount to increase.
+            
+        Returns:
+            None"""
+        
+        self.current_exp += exp_amount
+
+    def add_defeated_npc(self, defeated_npc):
+        """Add defeated npc to list.
+        
+        Args:
+            defeated_npc: The defeated npc."""
+
+
+        if defeated_npc not in self.defeated_npcs.keys():
+                self.defeated_npcs[defeated_npc] = 1
+        else:
+            self.defeated_npcs[defeated_npc] += 1
+
+
+
 
     # ------------- Viewing stats ------------- #
 

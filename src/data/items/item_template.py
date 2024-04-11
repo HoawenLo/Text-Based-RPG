@@ -77,16 +77,16 @@ class SpecialEquipable(BasicEquipable, EffectItem):
 
 
 if __name__ == "__main__":
-    test_item = BasicEquipable(item_name="test",
-                               item_description="test",
-                               item_stack=False,
-                               value=10,
-                               item_type="Stock",
-                               attack=1,
-                               defence=1,
-                               health=0)
+    # test_item = BasicEquipable(item_name="test",
+    #                            item_description="test",
+    #                            item_stack=False,
+    #                            value=10,
+    #                            item_type="Stock",
+    #                            attack=1,
+    #                            defence=1,
+    #                            health=0)
 
 
-    if isinstance(test_item.__class__, "__main__.BasicEquipable"):
-        print("basic equipable")
-        
+    # if isinstance(test_item.__class__, "__main__.BasicEquipable"):
+    #     print("basic equipable")
+    pass

@@ -43,7 +43,7 @@ class Npc:
 
 
 
-class Quest(Npc):
+class QuestNPC(Npc):
     """Quest npcs update their dialogue as a quest progresses. They will interact with the quest module in the higher level location file."""
     def __init__(self, dialogue, name, quest_reference):
         super().__init__(dialogue, name)
@@ -51,8 +51,16 @@ class Quest(Npc):
         self.npc_type = "quest"
         self.quest_reference = quest_reference
 
-    def add_quest(self, player_reference):
-        pass
+    def quest_methods(self, param):
+
+        def run_quest():
+            self.quest_reference.activate_quest()
+
+        if param == "start_quest":
+            return run_quest
+
+    def run_dialogue(self, dialogue_active):
+        self.dialogue_text(dialogue_active, self.quest_methods)
         
 
 class SellTrader(Npc):
@@ -143,22 +151,24 @@ class SellTrader(Npc):
             return True
 
 
-    def display_sellable_items(self, player_inventory_items):
+    def display_sellable_items(self):
         """Calculates the value of items in the inventory that the trader is willing to buy.
         Then displays these sellable items.
         
         Args:
-            player_inventory_items: A reference to the player's inventory.
-            
+            None    
+        
         Returns:
             A dicitonary of sellable items."""
         
         sellable_items = {}
 
         print("Items that can be sold: ")
-        for i, inventory_item in enumerate(player_inventory_items):
+        for i, inventory_data in enumerate(self.player_reference.inventory.items()):
+            inventory_item = inventory_data[0]
+            amount = inventory_data[1]
             sellable_items[str(i + 1)] = inventory_item
-            print(f"{i + 1} {inventory_item.item_name} : {inventory_item.item_description} : : {inventory_item.value // 2} gold")
+            print(f"{i + 1} {amount} x {inventory_item.item_name} : {inventory_item.item_description} : : {inventory_item.value // 2} gold")
 
         return sellable_items
 
@@ -195,7 +205,9 @@ class SellTrader(Npc):
         Returns:
             The corresponding trading method."""
         
-        if method != "buy_items" or method != "sell_items":
+        options = ["buy_items", "sell_items"]
+
+        if method not in options:
             raise ValueError(f"Invalid method input. Must be buy_items or sell_items, instead input is {method}.")
         
         def run_purchase_sequence():
@@ -259,12 +271,12 @@ class SellTrader(Npc):
 
                 if response == "0":
                     break
-
+                
                 if response not in sellable_items.keys():
                     print("Invalid number.")
                     continue
                 
-                fetched_item  = self.fetch_item(response)
+                fetched_item  = sellable_items[response]
                 self.sell_items(fetched_item)
                 continue_interaction_resp = self.continue_interaction()
 
@@ -283,7 +295,7 @@ class SellTrader(Npc):
 
 class Combat(Npc):
 
-    def __init__(self, dialogue, name, base_health, attack, defence,  skill_level, common_exp_ranges):
+    def __init__(self, dialogue, name, base_health, attack, defence,  skill_level):
         super().__init__(dialogue, name)
 
         # NPC type
@@ -298,33 +310,59 @@ class Combat(Npc):
         self.skill_level = skill_level
 
         # Rewards for defeating the npc
+
+        common_exp_ranges = {1:(1,3), 
+                             2:(3,6), 
+                             3:(5,8), 
+                             4:(7,10), 
+                             5:(10,15), 
+                             6:(15,25), 
+                             7:(25, 40), 
+                             8:(40, 80), 
+                             9:(80, 120), 
+                             10:(120, 250), 
+                             11:(250, 500), 
+                             12:(500, 800), 
+                             13:(800, 1500),
+                             14:(1300, 2000), 
+                             15:(2000, 3000), 
+                             16:(3000, 5000), 
+                             17:(4500, 8000), 
+                             18:(8000, 13000), 
+                             19:(13000, 19000), 
+                             20:(18000, 22000), 
+                             21:(22000, 25000), 
+                             22:(23000, 27000), 
+                             23:(25000, 30000)}
+
         self.exp_ranges = common_exp_ranges
         self.exp_output = self.exp_ranges[self.skill_level]
         self.gold_range = (int((1.5 ** self.skill_level - 1) * 2), int((1.5 ** self.skill_level) * 2))
 
         # Status
         self.alive = True
-        self.available = False
+        self.available = True
 
-    def calculate_damage_inflicted(self):
+    def calculate_damage_inflicted(self, player):
         """Calculate the damage that is inflicted on the target (player).
         
         Args:
+            player: Player reference.
             randint: Random integer function is used to add randomness 
             to the damage values."""
         offset_value = randint(0, 3)
 
         if self.skill_level > 3:
-            damage = self.attack - self.defence + offset_value
+            damage = self.attack - player.defence + offset_value
         else:
-            damage = self.attack - self.defence - offset_value
+            damage = self.attack - player.defence - offset_value
 
         if damage < 0:
             damage = 0
 
         return damage
 
-    def calculate_damage_taken(self):
+    def calculate_damage_taken(self, player):
         """Calculate the damage that is inflicted by the target (player).
         
         Args:
@@ -332,24 +370,24 @@ class Combat(Npc):
             to the damage values."""
         if self.skill_level > 5:
             offset_value = randint(1, 5)
-            damage = self.attack - self.defence - offset_value 
+            damage = player.attack - self.defence - offset_value 
         
         elif self.skill_level < 5:
-            offset_value = randint(0,3)
-            damage = self.attack - self.defence - offset_value
+            offset_value = randint(0,2)
+            damage = player.attack - self.defence - offset_value
         
         if damage < 0:
             damage = 0
 
         return damage
 
-    def take_damage(self):
+    def take_damage(self, player):
         """Take damage during combat. Sets NPC to dead if defeated.
         
         Args:
             randint: Randint function to provide random values to calculate the damage."""
 
-        damage = self.calculate_damage_inflicted()
+        damage = self.calculate_damage_taken(player)
 
         self.current_health -= damage
 
@@ -364,7 +402,7 @@ class Combat(Npc):
             target: The target that damage will be inflicted on. The player.
             randint: Randint function to provide random values to calculate the damage."""
         
-        damage = self.calculate_damage_inflicted()
+        damage = self.calculate_damage_inflicted(target)
 
         target.current_health -= damage
 
@@ -397,7 +435,7 @@ class Combat(Npc):
         
         gold_amount = randint(self.gold_range[0], self.gold_range[1])
         return gold_amount
-    
+
     def check_on_condition(self, on_condition):
         """Checks the availability condition. If satisfied makes 
         available or unavailable. Makes the npc available for combat. 
@@ -420,7 +458,7 @@ class Combat(Npc):
             player: A reference to player object to access
             player methods."""
 
-        self.take_damage()
+        self.take_damage(player)
         self.inflict_damage(player)
 
         if self.current_health <= 0:
@@ -434,6 +472,8 @@ class Combat(Npc):
             player.add_defeated_npc(self)
 
             self.reset_health()
+
+            return True
         elif player.current_health <= 0:
             print("You have been defeated!")
             player.dead = True
@@ -458,7 +498,7 @@ class Dialogue:
             None"""
         self.run_node()
         
-    # ----------------- Add dialogue node ----------------- #
+    # ----------------- Set up nodes ----------------- #
 
     def initialise_node(self, dialogue_data):
         """Initialise the node. This must be done for the
@@ -490,8 +530,15 @@ class Dialogue:
             
         Returns:
             None"""
-        if dialogue_data not in self.dialogue_nodes:
-            self.dialogue_nodes[dialogue_data] = []
+        
+        if isinstance(dialogue_data, tuple):
+            if dialogue_data not in self.dialogue_nodes:
+                self.dialogue_nodes[dialogue_data] = []
+        
+        if isinstance(dialogue_data, list):
+            for node in dialogue_data:
+                if node not in self.dialogue_nodes:
+                    self.dialogue_nodes[node] = []
 
     def add_dialogue_edge(self, dialogue_data_one, dialogue_data_two):
         """Add a dialogue edge to connect two nodes. Check dialogue nodes
@@ -508,24 +555,11 @@ class Dialogue:
     def connect_nodes(self, org_node, new_node):
         """Connect the nodes. Nodes connect from org_node
         to new_node.
-
-        If length of new_node is 2, means it is a straight node hence
-        simple append to edges of the org_node.
-
-        Otherwise it will be a response node hence iterate through
-        and append all.
         
         Args:
             org_node: The front node.
             new_node: The back node."""
-        if len(new_node) == 2:
-            self.dialogue_nodes[org_node].append(new_node)
-        else:
-            for data in new_node:
-                if isinstance(data, tuple):
-                    self.dialogue_nodes[org_node].append(data)
-                else:
-                    self.dialogue_nodes[org_node].append((data))
+        self.dialogue_nodes[org_node].append(new_node)
 
     # ----------------- Dialogue flow ----------------- #
     
@@ -533,8 +567,29 @@ class Dialogue:
         """Recursion method to call next node until reaching an end node where the 
         current_node_pos will be set to None to end the recursive cycle."""
         if self.current_node_pos != None:
+            self.run_current_node_logic()
             self.return_next_node()
             self.run_node()
+
+    def run_current_node_logic(self):
+        """Run the logic of the current node."""
+
+        # Extract the current node input - usually string
+        # This string will either be dialogue text for
+        # npc_dialogue nodes, player_dialogue nodes
+        # or end_dialogue nodes. If the node is to run
+        # a special function it will provide the input
+        # to fetch the special function from the NPC class.
+        current_node_input = self.current_node_pos[0]
+        current_node_function = self.current_node_pos[1]
+
+        # Run relevant node logic.
+        if current_node_function == self.run_special_function:
+            current_node_function(current_node_input)
+        elif current_node_function == self.end_dialogue:
+            self.run_end_node()
+        else:
+            current_node_function(current_node_input)
 
     def return_next_node(self):
         """A method to return the values of the next node.
@@ -545,70 +600,29 @@ class Dialogue:
         If next node is empty, hence the end of the dialogue, set
         current_node_pos to None to end the recursion cycle.
         
-        If next node is response node, the length of node options will
-        be greater than one. Run the run_response_node method."""
-        node_options = self.retrieve_node_options()
-
-        if len(node_options) == 1:
-            self.run_straight_node(node_options)
-        elif len(node_options) == 0:
-            self.run_end_node()
-        else:
-            self.run_response_node(node_options)
-
-    def run_straight_node(self, node_options):
-        """Running a straight node moves straight away to the next
-        node option as there is only one option.
+        If next node is multi node, the length of node options will
+        be greater than one. Run the return_multi_node method."""
+        next_node_options = self.retrieve_node_options()
         
-        First fetch the current node input and then run the current
-        node function.
+        # If an end dialogue node has been activated, the 
+        # current_node_pos will be set to None hence
+        # retrieve_node_options will return None.
+        # Simply return to end this function logic.
+        if next_node_options == None:
+            return
 
-        Next get the next node and return it so it can be passed.
-
-        Args:
-            node_options: The next node options.
-            
-        Returns:
-            None"""
-        current_node_input = self.current_node_pos[0]
-        current_node_function = self.current_node_pos[1]
-
-        if current_node_function == self.run_special_function:
-            current_node_function(current_node_input)
-        elif current_node_function == self.end_dialogue:
-            self.dialogue_player(current_node_input)
-        else:
-            current_node_function(current_node_input)
-
-        self.get_next_single_node(node_options)
-        
-    
-    def run_response_node(self, node_options):
-        """Run a response node. Response nodes are nodes which contain
-        responses. Unlike a straight node which only has one option.
-        
-        Args:
-            node_options: The next node options. This is where the 
-            responses will be sourced from.
-            
-        Returns:
-            None"""
-
-        # pull out responses and show them
-        current_node_input = self.current_node_pos[0]
-        current_node_function = self.current_node_pos[1]
-        current_node_function(current_node_input)
-
-        self.show_responses(node_options)
-
-    def run_end_node(self):
-        """Run an end node. If the current node has no edges."""
-        current_node_function = self.current_node_pos[1]
-        current_node_function()
-
+        # If len next_node_options is 0, hence no further logic to be
+        # done simply set the current_node_pos to None to end the 
+        # run_node loop.
+        if len(next_node_options) == 1:
+            self.return_straight_node(next_node_options)
+        elif len(next_node_options) == 0:
+            self.current_node_pos = None
+        elif len(next_node_options) > 1:
+            self.return_multi_node(next_node_options)
 
     # ----------------- Retrieving node data ----------------- #
-    
+
     def retrieve_node_options(self):
         """Retrieves the next node options. If the next node is a
         response node, you will have multiple values in the node,
@@ -620,22 +634,86 @@ class Dialogue:
             
         Returns:
             The next node options."""
-        options = self.dialogue_nodes[self.current_node_pos]
-        return options
+        if self.current_node_pos != None:
+            options = self.dialogue_nodes[self.current_node_pos]
+            return options
 
-    def get_next_single_node(self, node_options):
-        """Get the next single node which is a node with only one value.
-        
+    def return_straight_node(self, next_node_options):
+        """Return the next node by setting the current_node_pos to 
+        next node.
+
         Args:
-            node_options: The next node options.
+            next_node_options: The next node options.
             
         Returns:
             None"""
-        if len(node_options) != 0:
-            next_node = node_options[0]
-            self.current_node_pos = next_node
+        
 
-    # ----------------- Dialogue building blocks ----------------- #
+        # Return the next node
+        self.current_node_pos = next_node_options[0]
+
+    def run_end_node(self):
+        """Run an end node to end the dialogue. Runs the end dialogue
+        and set the current_node_pos to None.
+        
+        Args:
+            None
+            
+        Returns:
+            None"""
+        
+        self.dialogue_player(self.current_node_pos[0])
+        self.current_node_pos = None
+
+    def return_multi_node(self, next_node_options):
+        """Run a multi node, where there are multiple node options.
+        The node type of the node options of multi nodes are always player
+        dialogue. Special function node types will lead on from the corresponding
+        node option.
+
+        Multi nodes simply display the options, it does not run any of the logic.
+        After displaying the options, and taking the input, the input will be
+        aligned with chosen node option. From there a straight node will be run,
+        which will be a player dialogue which then leads to the relevant option.
+        
+        Args:
+            None
+
+        Returns:
+            """
+        
+        # Looking at the current node which is a multi node, get all the text
+        # If want to edit and not display the text in future this is where you can edit
+        # the logic. This text is the player dialogue text.
+
+        raw_responses = [data[0] for data in next_node_options]
+
+        # Enumerate the responses and display them.
+        chat_responses = {str(num): resp for num, resp in enumerate(raw_responses) }
+        self.list_chat_options(chat_responses)
+        response_options = chat_responses.keys()
+
+        # Check that a response is valid - a number which corresponds to one of the 
+        # player dialogues.
+        while True:
+            response = input("Response: ")
+            if response not in response_options:
+                print("Invalid option. Type valid number.")
+                continue
+            break
+        
+        # Link the response to the node in a dictionary so it can be accessed.
+        # Then get the node text that corresponds to the node.
+        current_node_options = {resp: (resp, node_function) for resp, node_function in next_node_options}
+
+        node_text = chat_responses[response]
+
+        # Set the next node to the selected player dialogue. Essentially will run this as a straight node
+        # in the next node iteration.
+        self.current_node_pos = current_node_options[node_text]
+        
+
+    # ----------------- Node types ----------------- #
 
     def dialogue_npc(self, dialogue):
         """The npc dialogue. Text crawl the dialogue.
@@ -685,69 +763,20 @@ class Dialogue:
         
         Args:
             function: The input function to be run.
-            node_input_values: Node input values match to the corresponding special function.
+            node_input_value: Node input values match to the corresponding special function.
             
         Returns:
             None"""
         
+
         special_function = self.special_functions[node_input_value]
-        
         pulled_function = special_function(node_input_value)
         pulled_function()
-        
-        
-    def show_responses(self, node_options):
-        """Show the possible player responses. Sourced from the next node that is pointed at.
-        Node is of the format:
-        (("text option one", option_one_function), ("text option two", option_two_function) dialogue.show_responses).
-        Where the dialogue.show_response is the dialogue.show_response method.
-        
-        Chat responses are then numbered with enumerate and then list options method is used to print out the
-        potential chat responses.
-
-        Logic then goes on to check if the response given is valid.
-
-        Finally get the node that the player responded to and set it to the current node position.
-
-        Args:
-            node_options: The node options being pointed at. Must be a list of tuples.
-
-        Returns:
-            None
-        """
-
-        if not isinstance(node_options, list):
-            raise TypeError(f"Node options is not a list. Instead type is {type(node_options)}. node_options is {node_options}.")
-
-        raw_responses = [data[0] for data in node_options[:-1]]
-        chat_responses = {str(num): resp for num, resp in enumerate(raw_responses) }
-        self.list_chat_options(chat_responses)
-        response_options = chat_responses.keys()
-
-        while True:
-            response = input("Response: ")
-            if response not in response_options:
-                print("Invalid option. Type valid number.")
-                continue
-            break
-        
-        next_node = node_options[int(response)]
-        self.dialogue_player(next_node[0])
-
-        self.current_node_pos = next_node
 
     def end_dialogue(self):
-        """Set the current node postion to None to end the 
-        dialogue.
-        
-        Args:
-            None
-            
-        Returns:
-            None"""
-        
-        self.current_node_pos = None
-
+        """Placeholder method for end_dialogue. Does nothing but
+        makes ensures all nodes have same format."""
+        pass
 
     # ----------------- Viewing Nodes ----------------- #
 

@@ -5,11 +5,13 @@ from .player_mechanics.player_mechanics import Player
 class GameData:
 
     def __init__(self, player_reference):
-
-        location_database = LocationDatabase(ItemDatabase(player_reference).item_database, player_reference).locations_database
+        
+        self.location_data = LocationDatabase(ItemDatabase(player_reference).item_database, player_reference)
+        location_database = self.location_data.locations_database
 
         self.game_data = {"items":ItemDatabase(player_reference).item_database, 
                           "locations":location_database, 
-                          "player":Player}
+                          "player":Player,
+                          "intro_quest":self.location_data}
 
  

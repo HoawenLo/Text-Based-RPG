@@ -27,40 +27,50 @@ class Quest(Interactions):
             self.activated = True
 
 
-class Combat(Interactions):
+class Combat():
 
-    def __init__(self, player_reference):
-        super().__init__(player_reference)
+    def __init__(self, player_reference, local_npc_database, npc_conds):
 
+        self.player_reference = player_reference
         self.interaction_type = "combat"
         self.available_aggressive_npcs = []
+        self.local_npc_database = local_npc_database
+        self.npc_conds = npc_conds
 
     # ---------- Pre combat menu ---------- #
 
-    def update_combat_npcs(self, area_data_npcs, cond_type, npcs_conds):
+    # To be done
+    def update_combat_npcs(self):
         """Update the status of combat npcs. First filter for combat npcs.
         Run availability conditions to make npc available or unavailable.
         Finally append available npcs and remove unavailable npcs.
+
+        self.npc_conds format: {npc_object: npc_condition}
         
         Args:
-            area_data_npcs: The npcs of the area the player is in.
+            To be done in future
             cond_type: Either on or off. If on will check for on conditions
             to make npc availble, otherwise for off conditions to make npc
-            unavailable.
-            npc_conds: The supplied npc condtions with the linked npc. Is
-            a dictionary of format {npc_object: npc_condition}"""
+            unavailable."""
 
-        # break into function
-        combat_npcs = [i for i in area_data_npcs if i.npc_type == "combat"]
+        # Check local npc database for combat npcs.
+        combat_npcs = [npc for npc in self.local_npc_database.values() if npc.npc_type == "combat"]
 
-        if cond_type == "on":
-            for npc, condition in npcs_conds.items():
-                npc.check_on_condition(condition)
-        elif cond_type == "off":
-            for npc, condition in npcs_conds.items():
-                npc.check_off_condition(condition)
+        # # Make npcs available or unavailable. 
+        # # Certain combat NPCs if defeated cannot enter combat again
+        # # For example Quest combat NPCs.
+        # if cond_type == "on":
+        #     # Check the condition to make npc available. 
+        #     # If condition satisfied make it available.
+        #     for npc, condition in self.npcs_conds.items():
+        #         npc.check_on_condition(condition)
+        # elif cond_type == "off":
+        #     # Check the condition to make npc unavailable.
+        #     # If condition satisfied make it unavailable.
+        #     for npc, condition in self.npcs_conds.items():
+        #         npc.check_off_condition(condition)
 
-        # Break into function
+        # Collect available aggressive npcs and remove unavailable aggressive npcs.
         for npc in combat_npcs:
             if npc.available == True and npc not in self.available_aggressive_npcs:
                 self.available_aggressive_npcs.append(npc)
@@ -69,52 +79,65 @@ class Combat(Interactions):
                 self.available_aggressive_npcs.remove(npc)
 
     def gather_combat_npcs(self):
-        """List available combat npcs in name format."""
+        """Create a list of the names of available aggressive npcs.
+        
+        Args:
+            None
 
-        avail_combat_npcs = [npc.name for npc in self.available_aggressive_npcs]
+        Returns:
+            None"""
 
-        return avail_combat_npcs
+        self.avail_combat_npcs = {str(i + 1): npc.name for i, npc in enumerate(self.available_aggressive_npcs)}
 
-    def show_pre_combat_menu(self, available_npcs):
+    def show_pre_combat_menu(self):
         """Show pre combat menu.
         
         Args:
-            available_npcs: The available combat npcs."""
-
+            None
+            
+        Returns:
+            None"""
         combat_npc_list = ""
 
-        for npc in available_npcs:
-            combat_npc_list += f" -- {npc}"
+        for i, npc in self.avail_combat_npcs.items():
+            combat_npc_list += f" -- {i}: {npc}"
 
         combat_npc_list += " --"
 
-        print("Available Combat Npcs:")
+        print("Available Combat NPCs:")
         print(combat_npc_list)
         
     def fetch_npc_response(self):
         """Fetch the player response for npc to enter
-        combat."""
+        combat.
+        
+        Args:
+            None
+            
+        Returns:
+            The chosen npc to fight."""
 
-        npc_response = input("Type name of npc or exit: ")
+        npc_response = input("Type number of npc or 0 to exit: ")
         return npc_response    
 
-    def run_pre_combat(self, available_npcs):
+    def run_pre_combat(self):
         """Run the pre combat menu and gather available combat npcs.
         
         Args:
-            available_npcs: The available npcs to enter combat with.
-            Is a list with npc.name values."""
-        
+            None
+            
+        Returns:
+            Chosen NPC to fight."""
         self.update_combat_npcs()
-        available_npcs = self.gather_combat_npcs()
+        self.gather_combat_npcs()
 
         while True:
-            self.show_pre_combat_menu(available_npcs)
+            self.show_pre_combat_menu()
             npc_response = self.fetch_npc_response()
 
-            if npc_response == "exit":
-                break
-            elif npc_response not in available_npcs:
+            if npc_response == "0":
+                return npc_response
+            elif npc_response not in self.avail_combat_npcs:
                 print("Invalid npc inputted.")
             else:
                 return npc_response
@@ -126,7 +149,7 @@ class Combat(Interactions):
         
         Args:
             npc: The npc object to show on the menu."""
-        stats = f" {self.player_reference.current_health} / {self.player_reference.base_health}       {npc.current_health} / {npc.base_health}"
+        stats = f" Player health: {self.player_reference.current_health} / {self.player_reference.base_health}       NPC health: {npc.current_health} / {npc.base_health}"
         options = " -- 1 Attack -- 2 Use Item -- 3 Run --"
         
         print(stats)
@@ -140,7 +163,8 @@ class Combat(Interactions):
         Args:
             npc: The npc object to run the combat sequence
             with."""
-        npc.run_combat_sequence(self.player_reference)
+        battle_outcome = npc.run_combat_sequence(self.player_reference)
+        return battle_outcome
 
     def use_item_response(self):
         """Run the use item response"""
@@ -152,8 +176,10 @@ class Combat(Interactions):
 
         if random_number == 1:
             print("Successfully escaped!")
+            return True
         else:
             print("Failed to escape")
+            return False
 
     def enter_combat(self, npc):
         """Enter combat method with different combat responses.
@@ -173,27 +199,33 @@ class Combat(Interactions):
                 continue
 
             if combat_response == "1":
-                self.attack_response(npc)
+                battle_outcome = self.attack_response(npc)
+                if battle_outcome:
+                    break
             elif combat_response == "2":
                 self.use_item_response()
             elif combat_response == "3":
-                self.run_response()
+                run_outcome = self.run_response()
+                if run_outcome:
+                    break
             
     # ---------- Master function ---------- #
 
-    def run_combat(self, area_data_npcs):
+    def run_combat(self):
         """Run combat interaction logic.
         
         Args:
-            area_data_npcs: The npcs available in this area.
-            Needed to get the available combat npcs."""
-
+            """
         selected_npc_response = self.run_pre_combat()
         
-        if selected_npc_response != "exit":
-            selected_npc = area_data_npcs[selected_npc]
+        npcs = {npc.name: npc for npc in self.available_aggressive_npcs}
+
+        npc_name = self.avail_combat_npcs[selected_npc_response]
+
+        if selected_npc_response != "0":
+            selected_npc = npcs[npc_name]
             self.enter_combat(selected_npc)
 
-    def run_logic(self, **kwargs):
-        """Run logic. Kwargs will be area_data_npcs."""
-        self.run_combat(kwargs)
+    def run_logic(self):
+        """Run logic. Kwargs will be npc_conds."""
+        self.run_combat()

@@ -8,7 +8,9 @@ class Quest:
                  activation_condition, 
                  maximum_steps, 
                  all_goals, 
-                 all_conditions):
+                 all_conditions, 
+                 player_reference,
+                 quest_npc):
         """Class attributes:
         
         Input Attributes:
@@ -19,7 +21,7 @@ class Quest:
             activation_condition: An input function which returns true if the activation
             condition is satisfied.
             maximum_steps: The number of steps needed required for completion of the quest.
-            all_goals: A dictionary of all descriptions of the conditions for each step of the quest.
+            all_goals: A list of all descriptions of the conditions for each step of the quest.
             Dictionary follows a format of {step_number:"Condition description"}. The final step
             of the dictionary states the completion description.
 
@@ -27,7 +29,13 @@ class Quest:
 
             all_conditions: A dictionary of the condition functions for each step of the quest.
             Dictionary follows a format of {step_number:condition_function}.
-            
+            player_reference: The player reference.
+            quest_npc: The quest npc linked to the quest.
+        
+        Format of rewards input:
+        
+        rewards: {"exp":amount, "gold":amount, "item_name":(item_number, items)}
+
         Non Input Attributes:
             quest_active: Boolean which states if quest active or not. Prevents quest
             from activating from the start.
@@ -59,35 +67,50 @@ class Quest:
         self.all_conditions = all_conditions
         self.current_condition = None
 
+        # Player reference
+        self.player_reference = player_reference
+
+        # Quest npc
+        self.quest_npc = quest_npc
+
+        # Feed quest into quest npc
+        self.quest_npc.quest_reference = self
+
     def activate_quest(self):
         """If the activation condition is satisfied, return true from
         the activation condition function, setting the quest to active.
         Initialise the conditions and goals (condition description)."""
-        if self.activation_condition == True and self.complete == False and self.quest_active == False:
+
+        if self.activation_condition() == True and self.complete == False and self.quest_active == False:
             self.quest_active = True
             self.update_conditions()
+            self.player_reference.add_quest(self)
+            print(f"{self.quest_name} started.")
 
-    def check_quest(self, player_reference):
+    def check_quest(self):
         """Checks if quest conditions have been achieved to move on next step.
         If final step completed, set quest to complete and give rewards."""
 
-        if self.current_condition == True and self.quest_active == True:
+        if self.current_condition() == True and self.quest_active == True:
             self.progress_step()
             self.update_conditions()
 
         if self.current_step > self.maximum_steps:
             self.set_quest_complete()
-            self.set_status_complete(player_reference=player_reference)
-            self.give_reward(player_reference=player_reference)
+            self.set_status_complete()
+            self.give_reward()
 
-    def set_status_complete(self, player_reference):
+    def set_status_complete(self):
         """Move the quest from ongoing status to completed status. 
         
         Args:
-            player_reference: To access the player quest data."""
+            None
+            
+        Returns:
+            None"""
         
-        del player_reference.ongoing_quest_list[self.quest_name]
-        player_reference.completed_quest_list[self.quest_name] = self.current_goal
+        del self.player_reference.ongoing_quest_list[self.quest_name]
+        self.player_reference.completed_quest_list[self.quest_name] = self.current_goal
 
     def set_quest_complete(self):
         """If quest completion objective achieved, set quest to inactive
@@ -95,14 +118,28 @@ class Quest:
         self.quest_active = False
         self.complete = True
 
-    def give_reward(self, player_reference):
+    def give_reward(self):
         """Give reward to the player. 
         Args:
-            player_reference: Player reference to enable pickup method."""
+            None
+            
+        Returns:
+            None"""
         
-        for reward, quantity in self.rewards.items():
+        for reward_type, reward in self.rewards.items():
+            
+            if reward_type == "exp":
+                self.player_reference.gain_exp(reward)
+                continue
+            elif reward_type == "gold":
+                self.player_reference.gold += reward
+                continue
+            
+            item = reward[0]
+            quantity = reward[1]
+
             for _ in range(1, quantity + 1):
-                player_reference.pickup(reward)
+                self.player_reference.pickup(item)
         
         print(f"Acquired {self.rewards_description}")
 
@@ -114,6 +151,10 @@ class Quest:
         """Updates the step condition and condition description."""
         self.current_goal = self.all_goals[self.current_step]
         self.current_condtion = self.all_conditions[self.current_step]
+
+
+
+        
 
 
         

@@ -7,4 +7,6 @@ class LocationDatabase:
         
         # --------------------- Locations database --------------------- #
 
-        self.locations_database = {"windengard":Windergard(item_database, player_reference).all_areas}
+        self.windengard_reference = Windergard(item_database, player_reference)
+
+        self.locations_database = {"windengard":self.windengard_reference.all_areas}

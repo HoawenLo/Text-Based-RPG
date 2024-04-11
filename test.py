@@ -352,16 +352,17 @@ class Dialogue:
 
 
 if __name__ == "__main__":
-    # npcs = WindergardNPCs(item_database=None, player_reference=None)
+    npcs = WindergardNPCs(item_database=None, player_reference=None)
 
-    # old_man = npcs.npc_packages("oldman")
-    # old_man.run_dialogue(dialogue_active=True)
+    old_man = npcs.npc_packages("oldman")
+    old_man.run_dialogue(dialogue_active=True)
 
     def get_method(type):
         def special_function():
             items = {"1":"test", "2":"test"}
 
             for i, item in items.items():
+
                 print(i, item)
 
         if type == "buy_items":
