@@ -117,8 +117,6 @@ class Player:
                     for _ in range(item_number):
                         print(f"1 x {item.item_name}")
 
-    
-
     def pickup_item(self, item):
         """Pickup item to store in inventory.
         
@@ -198,7 +196,6 @@ class Player:
         options = ["1", "2", "3"]
 
         print("What would you like to do?")
-        
 
         while True:
             response = input("Response: ") 
@@ -213,8 +210,6 @@ class Player:
             self.run_use_item_menu(item_database)
         elif response == "3":
             pass
-
-        
 
     def buy_item(self, item):
         """Character interaction to buy item.
@@ -231,8 +226,8 @@ class Player:
         else:
             self.pickup_item(item)
             self.gold -= item.value
-            print(f"{item.item_name} purchased.")
-            print(f"Gold: {self.gold}")
+            print(f"Inventory update: {item.item_name} purchased.")
+            print(f"Inventory update: Remaining gold, {self.gold}")
 
     def sell_item(self, item):
         """Character interaction to sell item.
@@ -558,6 +553,8 @@ class Player:
         Returns:
             None"""
         
+        line = "-" * 71
+
         self.view_equipped()
         if len(self.inventory.keys()) != 0:
             equipable_items = self.show_equippable()
@@ -569,8 +566,12 @@ class Player:
             else:
                 item = equipable_items[equip_response]
                 self.equip_item(item)
+                print(line)
                 self.view_equipped()
+                print(line)
+                print("New stats")
                 self.view_stats()
+                print(line)
         else:
             print("Inventory empty.")
 
@@ -628,20 +629,20 @@ class Player:
         if self.completed_quest_list == {}:
             print("Empty.")
 
-        for quest_data, quest_description in self.completed_quest_list.items():
-            print(f"{quest_data.quest_name} : {quest_description}")
+        for quest_name, quest_description in self.completed_quest_list.items():
+            print(f"{quest_name} : {quest_description}")
 
     def view_ongoing_quests(self):
         """View ongoing quests and descriptions."""
         if self.ongoing_quest_list == {}:
             print("Empty.")
 
-        for quest_data, quest_instruction in self.ongoing_quest_list.items():
-            print(f"{quest_data.quest_name} : {quest_instruction}")
+        for quest_name, quest_data in self.ongoing_quest_list.items():
+            print(f"{quest_name} : {quest_data.current_goal}")
 
     def add_quest(self, quest_reference):
         # make sure not in completed
-        self.ongoing_quest_list[quest_reference] = quest_reference.current_goal
+        self.ongoing_quest_list[quest_reference.quest_name] = quest_reference
 
     # ------------- Combat ------------- #
 

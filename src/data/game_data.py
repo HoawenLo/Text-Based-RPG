@@ -6,6 +6,7 @@ class GameData:
 
     def __init__(self, player_reference):
         
+        # This is messy but couldn't be bothered to reorganise everything to find a way to access the intro quest.
         self.location_data = LocationDatabase(ItemDatabase(player_reference).item_database, player_reference)
         location_database = self.location_data.locations_database
 

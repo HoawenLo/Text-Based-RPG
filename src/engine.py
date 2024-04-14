@@ -92,6 +92,7 @@ class Engine:
         """Loads the prologue text."""
 
         word_crawl(self.title_intro_txt, text_speed=0.1, line_length=60)
+        input("Press any key to continue ")
 
     def set_player_settings(self):
         """Initialise the new start state for the player."""
@@ -115,12 +116,7 @@ class Engine:
         self.player.area_data = self.player.current_location[self.player.current_area]
 
 
-        # welcome_text = "You arrive in Windengard, welcomed by an old man."
-        # character_crawl(welcome_text)
-
         # Activate tutorial
-
-
         self.game_data["intro_quest"].windengard_reference.npcs["oldman_intro"].run_dialogue(dialogue_active=True)
 
 
@@ -160,8 +156,8 @@ class Engine:
     def load_new_game(self):
         """Load a new game."""
 
-        # self.load_title_screen()
-        # self.load_intro_text()
+        self.load_title_screen()
+        self.load_intro_text()
         self.set_player_settings()
 
     def run_game(self):
@@ -204,6 +200,7 @@ class Engine:
 
         equipped_items = self.return_equipped_names()
         
+        print(line)
         print(f"Health: {self.player.current_health} / {self.player.base_health}    Current Area: {self.player.current_area}    Gold: {self.player.gold}    Inventory space: {self.player.inventory_size} / {self.player.max_inventory_size}")
         print(line)
         print(combine_characters(f"Helmet {equipped_items[0]}", f"Weapon: {equipped_items[2]}", line_length=51))
@@ -230,13 +227,13 @@ class Engine:
 
     def check_quests(self):
         """Check if quests need to be updated."""
-        ongoing_quests = self.player.ongoing_quest_list.keys()
+        ongoing_quest_names = list(self.player.ongoing_quest_list.keys())
 
-        if len(list(ongoing_quests)) == 0:
+        if len(list(ongoing_quest_names)) == 0:
             pass
         else:
-            for quest in ongoing_quests:
-                quest.check_quest()
+            for quest_name in ongoing_quest_names:
+                self.player.ongoing_quest_list[quest_name].check_quest()
     
     # ------------------------------------- All player response options -------------------------------------
     def move_response(self):

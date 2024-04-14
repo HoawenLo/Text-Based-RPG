@@ -225,10 +225,12 @@ class SellTrader(Npc):
                 
             Returns:
                 None"""
-            
+            line = "-" * 71
             self.word_crawl(f"{self.name}: This is what I have.")
 
             while True:
+                print(line)
+                print("Available products: ")
                 self.show_products()
                 response = self.run_buy_response()
 
@@ -588,6 +590,8 @@ class Dialogue:
             current_node_function(current_node_input)
         elif current_node_function == self.end_dialogue:
             self.run_end_node()
+        elif current_node_function == self.player_continue_response:
+            self.player_continue_response()
         else:
             current_node_function(current_node_input)
 
@@ -778,6 +782,12 @@ class Dialogue:
         makes ensures all nodes have same format."""
         pass
 
+    def player_continue_response(self):
+        """Request player to press any key to break up dialogue."""
+
+        input("Press any key to continue ")
+
+
     # ----------------- Viewing Nodes ----------------- #
 
     def display_dialogue(self):
@@ -789,7 +799,7 @@ class Dialogue:
         Returns:
             None"""
         for node, neighbors in self.dialogue_nodes.items():
-            print(f"{node}: {neighbors}")
+            print(f"{node}: {neighbors}\n")
 
     # ----------------- Text manipulation ----------------- #
             
@@ -854,9 +864,6 @@ if __name__ == "__main__":
         trader_dialogue = Dialogue()
 
         if len(list(args)) == 4:
-
-            
-
             special_functions = {"buy_items":args[1]}
             trader_dialogue.set_special_functions(special_functions)
 

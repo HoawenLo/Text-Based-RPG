@@ -75,7 +75,7 @@ class WindergardNPCs:
 
             # Dialogue below
                 
-            a = ("Old man: Ah, a newcomer to Mottengard! I sense the spark of adventure in your eyes. Welcome, young one. What brings you to our humble village?", dialogue.dialogue_npc)
+            a = ("Old man: Ah, a newcomer to Windengard! I sense the spark of adventure in your eyes. Welcome, young one. What brings you to our humble village?", dialogue.dialogue_npc)
             b = ("Thank you, sir. I've come in search of renown and fortune. There's talk of a grand quest and an ancient artifact.", dialogue.dialogue_player)
             c = ("Old man: The Heartstone, no doubt. A tale as old as time. Many have sought it, but few truly understand its mysteries. Be cautious, for the path to Astralhaven is fraught with challenges.", dialogue.dialogue_npc)
             d = ("Challenges, you say? What advice do you have for a novice like me?", dialogue.dialogue_player)
@@ -83,6 +83,14 @@ class WindergardNPCs:
             f = ("Wise words, sir. Where do you recommend I begin?", dialogue.dialogue_player)
             g = ("Old man: Start with visiting the blacksmith, if you want to make it to Astralhaven you will need some good gear to get you through the dark forests.", dialogue.dialogue_npc)
             h = ("start_quest", dialogue.run_special_function)
+
+            # Ensure node name is different to prevent it being an unintended mutli node.
+            i = ("player_continue_input_1", dialogue.player_continue_response)
+            j = ("player_continue_input_2", dialogue.player_continue_response)
+            k = ("player_continue_input_3", dialogue.player_continue_response)
+            l = ("player_continue_input_4", dialogue.player_continue_response)
+            m = ("player_continue_input_5", dialogue.player_continue_response)
+            n = ("player_continue_input_6", dialogue.player_continue_response)
 
             dialogue.initialise_node(a)
             dialogue.add_dialogue_node(b)
@@ -92,13 +100,25 @@ class WindergardNPCs:
             dialogue.add_dialogue_node(f)
             dialogue.add_dialogue_node(g)
             dialogue.add_dialogue_node(h)
+            dialogue.add_dialogue_node(i)
+            dialogue.add_dialogue_node(j)
+            dialogue.add_dialogue_node(k)
+            dialogue.add_dialogue_node(l)
+            dialogue.add_dialogue_node(m)
+            dialogue.add_dialogue_node(n)
 
-            dialogue.add_dialogue_edge(a, b)
-            dialogue.add_dialogue_edge(b, c)
-            dialogue.add_dialogue_edge(c, d)
-            dialogue.add_dialogue_edge(d, e)
-            dialogue.add_dialogue_edge(e, f)
-            dialogue.add_dialogue_edge(f, g)
+            dialogue.add_dialogue_edge(a, i)
+            dialogue.add_dialogue_edge(i, b)
+            dialogue.add_dialogue_edge(b, j)
+            dialogue.add_dialogue_edge(j, c)
+            dialogue.add_dialogue_edge(c, k)
+            dialogue.add_dialogue_edge(k, d)
+            dialogue.add_dialogue_edge(d, l)
+            dialogue.add_dialogue_edge(l, e)
+            dialogue.add_dialogue_edge(e, m)
+            dialogue.add_dialogue_edge(m, f)
+            dialogue.add_dialogue_edge(f, n)
+            dialogue.add_dialogue_edge(n, g)
             dialogue.add_dialogue_edge(g, h)
 
             dialogue.run_dialogue()

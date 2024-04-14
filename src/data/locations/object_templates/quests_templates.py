@@ -83,9 +83,9 @@ class Quest:
 
         if self.activation_condition() == True and self.complete == False and self.quest_active == False:
             self.quest_active = True
-            self.update_conditions()
+            self.initialise_conditions()
             self.player_reference.add_quest(self)
-            print(f"{self.quest_name} started.")
+            
 
     def check_quest(self):
         """Checks if quest conditions have been achieved to move on next step.
@@ -93,12 +93,22 @@ class Quest:
 
         if self.current_condition() == True and self.quest_active == True:
             self.progress_step()
-            self.update_conditions()
 
         if self.current_step > self.maximum_steps:
             self.set_quest_complete()
             self.set_status_complete()
+            print(f"Quest update: {self.quest_name} complete!")
             self.give_reward()
+        
+        # Placed here as want to not update conditions if self.current_step
+        # > self.maximum_steps meaning that all steps have been completed.
+        # The self.set_status_complete will set self.quest_active to False
+        # hence will not attempt to update_conditions. If attempt to update
+        # conditions will get KeyError (no more steps to update to).
+        if self.current_condition() == True and self.quest_active == True:
+            self.update_conditions()
+
+
 
     def set_status_complete(self):
         """Move the quest from ongoing status to completed status. 
@@ -110,7 +120,7 @@ class Quest:
             None"""
         
         del self.player_reference.ongoing_quest_list[self.quest_name]
-        self.player_reference.completed_quest_list[self.quest_name] = self.current_goal
+        self.player_reference.completed_quest_list[self.quest_name] = self.rewards_description
 
     def set_quest_complete(self):
         """If quest completion objective achieved, set quest to inactive
@@ -139,7 +149,7 @@ class Quest:
             quantity = reward[1]
 
             for _ in range(1, quantity + 1):
-                self.player_reference.pickup(item)
+                self.player_reference.pickup_item(item)
         
         print(f"Acquired {self.rewards_description}")
 
@@ -147,10 +157,22 @@ class Quest:
         """Move the quest forward onto next step."""
         self.current_step += 1
 
+    def initialise_conditions(self):
+        """Initialise quest conditions."""
+        
+        self.current_goal = self.all_goals[self.current_step]
+        self.current_condition = self.all_conditions[self.current_step]
+        print(f"Quest update: {self.quest_name} started.")
+        print(f"Quest update: {self.quest_name}, New goal, {self.current_goal}")
+
+
     def update_conditions(self):
         """Updates the step condition and condition description."""
+
+        print(f"Quest update:  {self.quest_name}, Step {self.current_step} achieved.")
         self.current_goal = self.all_goals[self.current_step]
-        self.current_condtion = self.all_conditions[self.current_step]
+        self.current_condition = self.all_conditions[self.current_step]
+        print(f"Quest update: {self.quest_name}, New goal, {self.current_goal}")
 
 
 
