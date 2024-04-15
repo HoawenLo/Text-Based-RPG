@@ -207,7 +207,7 @@ class Player:
         if response == "1":
             self.drop_items_section(item_database)
         elif response == "2":
-            self.run_use_item_menu(item_database)
+            self.run_use_item_menu()
         elif response == "3":
             pass
 
@@ -274,7 +274,7 @@ class Player:
         
         return available_tools
 
-    def run_use_item_menu(self, item_database):
+    def run_use_item_menu(self):
         """Run the use item menu for combat or non combat
         situations."""
 
