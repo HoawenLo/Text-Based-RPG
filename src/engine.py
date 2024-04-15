@@ -84,14 +84,14 @@ class Engine:
     def load_title_screen(self):
         """Loads the title screen."""
 
-        # character_crawl(self.title_screen, text_speed=0.3)
-        # character_crawl(self.title_screen, text_speed=0.01)
+        character_crawl(self.title_screen, text_speed=0.3)
+        character_crawl(self.title_screen, text_speed=0.01)
         print(self.title_screen)
 
     def load_intro_text(self):
         """Loads the prologue text."""
 
-        # word_crawl(self.title_intro_txt, text_speed=0.1, line_length=60)
+        word_crawl(self.title_intro_txt, text_speed=0.1, line_length=60)
         input("Press any key to continue ")
 
     def set_player_settings(self):
